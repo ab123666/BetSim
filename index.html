@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>竞彩投注 - 胜平负</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff5000'/><text x='50' y='68' font-size='60' font-weight='900' fill='white' text-anchor='middle' font-family='Arial'>竞</text></svg>">
 <style>
@@ -834,6 +834,230 @@
     .tb-balance-amount { font-size: 19px; }
     .tb-logo-text { font-size: 18px; }
   }
+
+  /* ===== 移动端全面适配（安卓/iOS） ===== */
+  @media (max-width: 768px) {
+    /* 触摸友好：按钮最小44px */
+    .tb-odds-btn {
+      min-height: 52px;
+      padding: 10px 8px;
+      font-size: 14px;
+    }
+    .tb-btn-primary, .tb-btn-outline {
+      min-height: 44px;
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+    .tb-btn-edit {
+      min-height: 36px;
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+    /* 顶部导航优化 */
+    .tb-header-top {
+      padding: 10px 12px;
+      gap: 10px;
+    }
+    .tb-logo {
+      gap: 8px;
+    }
+    .tb-logo-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+    }
+    .tb-logo-text {
+      font-size: 17px;
+    }
+    .tb-logo-sub {
+      font-size: 10px;
+    }
+    /* 余额区域 */
+    .tb-balance {
+      gap: 8px;
+      padding: 4px 10px;
+    }
+    .tb-balance-label {
+      font-size: 11px;
+    }
+    .tb-balance-amount {
+      font-size: 18px;
+    }
+    /* 按钮区域 */
+    .tb-header-actions {
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    .tb-header-actions .tb-btn-primary,
+    .tb-header-actions .tb-btn-outline {
+      flex: 1;
+      max-width: 160px;
+    }
+    /* 主内容区 */
+    .tb-main {
+      padding: 12px 10px 40px;
+    }
+    /* 比赛卡片 */
+    .tb-card {
+      padding: 14px 12px;
+      border-radius: 12px;
+    }
+    .tb-team-name {
+      font-size: 14px;
+    }
+    .tb-vs {
+      font-size: 11px;
+      padding: 3px 8px;
+    }
+    .odds-label {
+      font-size: 12px;
+    }
+    .odds-value {
+      font-size: 16px;
+    }
+    .odds-stake {
+      font-size: 10px;
+    }
+    /* 投注信息 */
+    .tb-bet-info {
+      margin-top: 10px;
+      padding-top: 10px;
+    }
+    .tb-bet-total .label,
+    .tb-bet-potential .label {
+      font-size: 11px;
+    }
+    .tb-bet-total .amount,
+    .tb-bet-potential .value {
+      font-size: 14px;
+    }
+    /* 大结果卡 */
+    .big-result-text {
+      font-size: 42px;
+    }
+    .big-result-amount {
+      font-size: 24px;
+    }
+    .big-result-match {
+      font-size: 12px;
+    }
+    /* 弹窗适配 */
+    .tb-modal-content {
+      width: 92%;
+      max-width: 360px;
+      margin: 10vh auto;
+      padding: 20px 16px;
+      border-radius: 16px;
+    }
+    .tb-modal-title {
+      font-size: 17px;
+    }
+    .tb-form-label {
+      font-size: 13px;
+    }
+    .tb-form-input {
+      font-size: 16px; /* 防止iOS聚焦缩放 */
+      padding: 12px 14px;
+      min-height: 48px;
+    }
+    .tb-form-hint {
+      font-size: 11px;
+    }
+    .tb-modal-btn {
+      min-height: 44px;
+      font-size: 14px;
+      padding: 10px 16px;
+    }
+    /* 快捷金额按钮 */
+    .tb-quick-amounts {
+      gap: 8px;
+    }
+    .tb-quick-btn {
+      min-height: 36px;
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+    /* Toast提示 */
+    .tb-toast {
+      font-size: 13px;
+      padding: 10px 16px;
+      max-width: 90%;
+    }
+    /* 粒子容器 */
+    .particle-container {
+      overflow: hidden;
+    }
+  }
+
+  /* 小屏手机（≤480px） */
+  @media (max-width: 480px) {
+    .tb-header-top {
+      padding: 8px 10px;
+      gap: 8px;
+    }
+    .tb-logo-text {
+      font-size: 15px;
+    }
+    .tb-logo-sub {
+      display: none;
+    }
+    .tb-balance-amount {
+      font-size: 16px;
+    }
+    .tb-team-name {
+      font-size: 13px;
+    }
+    .odds-value {
+      font-size: 15px;
+    }
+    .big-result-text {
+      font-size: 36px;
+    }
+    .big-result-amount {
+      font-size: 20px;
+    }
+    .tb-modal-content {
+      width: 95%;
+      padding: 16px 14px;
+    }
+  }
+
+  /* 触摸设备优化 */
+  @media (hover: none) and (pointer: coarse) {
+    .tb-card:hover {
+      transform: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .tb-odds-btn:hover:not(:disabled) {
+      transform: none;
+    }
+    .tb-btn-primary:hover:not(:disabled) {
+      transform: none;
+    }
+    .tb-logo:hover {
+      transform: none;
+    }
+    /* 触摸反馈 */
+    .tb-odds-btn:active:not(:disabled) {
+      transform: scale(0.96);
+      background: #fff7e6;
+    }
+    .tb-btn-primary:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    .tb-btn-outline:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+  }
+
+  /* 防止文本选择（游戏体验） */
+  .tb-odds-btn, .tb-btn-primary, .tb-btn-outline, .tb-card {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
 </style>
 </head>
 <body>
