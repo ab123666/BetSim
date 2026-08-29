@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>竞彩投注 - 胜平负</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff5000'/><text x='50' y='68' font-size='60' font-weight='900' fill='white' text-anchor='middle' font-family='Arial'>竞</text></svg>">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ===== 顶部导航栏 ===== */
+  .tb-header {
+    background: linear-gradient(135deg, #ff5000 0%, #ff6a00 50%, #ff8c00 100%);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(255, 80, 0, 0.25);
+  }
+  .tb-header::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .tb-header-top {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .tb-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tb-logo:hover { transform: scale(1.05) rotate(-1deg); }
+  .tb-logo-icon {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: #ff5000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+  }
+  .tb-logo:hover .tb-logo-icon {
+    transform: rotate(5deg) scale(1.1);
+    box-shadow: 0 6px 16px rgba(255, 80, 0, 0.4);
+  }
+  .tb-logo-text {
+    color: #fff;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .tb-logo-sub {
+    color: rgba(255,255,255,0.85);
+    font-size: 11px;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  /* 余额卡片 */
+  .tb-balance {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    border-radius: 20px;
+    padding: 6px 16px;
+    flex-shrink: 0;
+  }
+  .tb-balance-label {
+    color: rgba(255,255,255,0.85);
+    font-size: 12px;
+    margin-bottom: 1px;
+  }
+  .tb-balance-amount {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: inline-block;
+  }
+  .tb-balance-amount.bump {
+    will-change: transform;
+    animation: balanceBump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes balanceBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.15); color: #fffbe6; }
+    100% { transform: scale(1); }
+  }
+  .tb-balance-amount::before {
+    content: "¥";
+    font-size: 15px;
+    margin-right: 2px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+  .tb-btn-edit {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 14px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(10px);
+  }
+  .tb-btn-edit:hover {
+    background: #fff;
+    color: #ff5000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  /* 顶部操作按钮 */
+  .tb-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .tb-btn-primary {
+    background: #fff;
+    color: #ff5000;
+    border: none;
+    border-radius: 20px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-width: 150px;
+  }
+  .tb-btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 16px rgba(255, 80, 0, 0.35);
+  }
+  .tb-btn-primary:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+  .tb-btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .tb-btn-outline {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(10px);
+  }
+  .tb-btn-outline:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
+  }
+
+  /* ===== 主内容区 ===== */
+  .tb-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 18px 16px 40px;
+  }
+
+  /* 分类标签栏 */
+  .tb-category-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  .tb-category-bar::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #ff5000, #ff8c00);
+  }
+  .tb-category-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tb-category-count {
+    font-size: 13px;
+    color: #999;
+    font-weight: 400;
+    background: #f5f5f5;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+  .tb-category-hint {
+    font-size: 12px;
+    color: #bbb;
+  }
+
+  /* 比赛卡片网格 */
+  .tb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 16px;
+  }
+
+  /* 比赛卡片 */
+  .tb-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid #f0f0f0;
+    position: relative;
+    animation: cardEnter 0.3s ease-out backwards;
+  }
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .tb-card:hover {
+    box-shadow: 0 8px 28px rgba(255, 80, 0, 0.15);
+    transform: translateY(-4px);
+    border-color: #ffd0b0;
+  }
+  .tb-card.has-bet {
+    border-color: #ffb380;
+    box-shadow: 0 4px 16px rgba(255, 80, 0, 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+  .tb-card.has-bet::after {
+    content: "已投注";
+    position: absolute;
+    top: 12px;
+    right: -32px;
+    transform: rotate(45deg);
+    background: linear-gradient(135deg, #ff5000, #ff7a45);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 36px;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(255, 80, 0, 0.3);
+    z-index: 10;
+  }
+
+  /* 已开奖卡片结果背景色（占满整个框） */
+  .tb-card.result-win {
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+    border-color: #389e0d;
+    box-shadow: 0 4px 20px rgba(82, 196, 26, 0.4);
+  }
+  .tb-card.result-lose {
+    background: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%);
+    border-color: #cf1322;
+    box-shadow: 0 4px 20px rgba(255, 77, 79, 0.4);
+  }
+
+  /* 开奖中状态 */
+  .tb-card.drawing {
+    animation: drawingPulse 0.8s ease-in-out infinite;
+  }
+  @keyframes drawingPulse {
+    0%, 100% { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    50% { box-shadow: 0 0 0 4px rgba(255, 80, 0, 0.2), 0 4px 20px rgba(255, 80, 0, 0.2); }
+  }
+
+  /* 中奖闪烁 - 高亮醒目 */
+  .tb-card.flash-win {
+    animation: flashWin 0.3s ease-in-out 2;
+    z-index: 5;
+  }
+  @keyframes flashWin {
+    0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
+    50% {
+      background: #52c41a;
+      border-color: #237804;
+      box-shadow: 0 0 50px rgba(82, 196, 26, 1), 0 0 100px rgba(82, 196, 26, 0.7), inset 0 0 30px rgba(255,255,255,0.3);
+      transform: scale(1.08);
+    }
+  }
+  .tb-card.flash-win .tb-team-name,
+  .tb-card.flash-win .odds-label,
+  .tb-card.flash-win .tb-bet-info .label {
+    color: #fff !important;
+  }
+  .tb-card.flash-win .odds-value,
+  .tb-card.flash-win .tb-bet-total .amount,
+  .tb-card.flash-win .tb-bet-potential .value {
+    color: #fff !important;
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+  }
+
+  .tb-card.flash-lose {
+    animation: flashLose 0.3s ease-in-out 2;
+    z-index: 5;
+  }
+  @keyframes flashLose {
+    0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
+    50% {
+      background: #ff4d4f;
+      border-color: #a8071a;
+      box-shadow: 0 0 50px rgba(255, 77, 79, 1), 0 0 100px rgba(255, 77, 79, 0.7), inset 0 0 30px rgba(255,255,255,0.3);
+      transform: scale(1.08);
+    }
+  }
+  .tb-card.flash-lose .tb-team-name,
+  .tb-card.flash-lose .odds-label,
+  .tb-card.flash-lose .tb-bet-info .label {
+    color: #fff !important;
+  }
+  .tb-card.flash-lose .odds-value,
+  .tb-card.flash-lose .tb-bet-total .amount,
+  .tb-card.flash-lose .tb-bet-potential .value {
+    color: #fff !important;
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+  }
+
+  /* 爆炸消失特效 */
+  .tb-card.explode-win {
+    animation: explodeWin 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    z-index: 5;
+  }
+  @keyframes explodeWin {
+    0% { opacity: 1; transform: scale(1.08); filter: brightness(1.2); }
+    25% { opacity: 1; transform: scale(1.25); filter: brightness(1.8); box-shadow: 0 0 80px rgba(82, 196, 26, 1), 0 0 150px rgba(82, 196, 26, 0.8); }
+    60% { opacity: 0.6; transform: scale(1.5); filter: brightness(2.5); }
+    100% { opacity: 0; transform: scale(1.8); filter: brightness(3); box-shadow: 0 0 120px rgba(82, 196, 26, 0); }
+  }
+  .tb-card.explode-lose {
+    animation: explodeLose 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    z-index: 5;
+  }
+  @keyframes explodeLose {
+    0% { opacity: 1; transform: scale(1.08); filter: brightness(1.2); }
+    25% { opacity: 1; transform: scale(1.25); filter: brightness(1.8); box-shadow: 0 0 80px rgba(255, 77, 79, 1), 0 0 150px rgba(255, 77, 79, 0.8); }
+    60% { opacity: 0.6; transform: scale(1.5); filter: brightness(2.5); }
+    100% { opacity: 0; transform: scale(1.8); filter: brightness(3); box-shadow: 0 0 120px rgba(255, 77, 79, 0); }
+  }
+
+  /* 粒子效果容器 */
+  .particle-container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 10;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: particleFly 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  @keyframes particleFly {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+  }
+
+  /* 球队对阵 */
+  .tb-teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 18px 18px;
+    gap: 10px;
+  }
+  .tb-team {
+    flex: 1;
+    text-align: center;
+  }
+  .tb-team-name {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    color: #333;
+    transition: all 0.3s ease;
+  }
+  .tb-team.home .tb-team-name { color: #1890ff; }
+  .tb-team.away .tb-team-name { color: #ff5000; }
+  .tb-card:hover .tb-team.home .tb-team-name { text-shadow: 0 0 20px rgba(24, 144, 255, 0.3); }
+  .tb-card:hover .tb-team.away .tb-team-name { text-shadow: 0 0 20px rgba(255, 80, 0, 0.3); }
+  .tb-vs {
+    font-size: 11px;
+    font-weight: 800;
+    color: #ccc;
+    background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+    padding: 5px 12px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+  }
+
+  /* 赔率按钮组 */
+  .tb-odds-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 0 18px 18px;
+  }
+  .tb-odds-btn {
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 10px 4px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+  .tb-odds-btn::before {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    background: rgba(255, 80, 0, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+  }
+  .tb-odds-btn:hover:not(:disabled)::before {
+    width: 200px; height: 200px;
+  }
+  .tb-odds-btn:hover:not(:disabled) {
+    border-color: #ff5000;
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 14px rgba(255, 80, 0, 0.2);
+  }
+  .tb-odds-btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+  }
+  .tb-odds-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .tb-odds-btn .odds-label {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+  .tb-odds-btn .odds-value {
+    font-size: 19px;
+    font-weight: 800;
+    color: #ff5000;
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.2s ease;
+  }
+  .tb-odds-btn:hover:not(:disabled) .odds-value {
+    transform: scale(1.1);
+  }
+  .tb-odds-btn .odds-value::before {
+    content: "@";
+    font-size: 13px;
+    margin-right: 1px;
+    font-weight: 600;
+    color: #ff9966;
+  }
+  .tb-odds-btn.result-hit {
+    border-color: #52c41a;
+    background: #f6ffed;
+  }
+  .tb-odds-btn.result-hit .odds-value { color: #52c41a; }
+  .tb-odds-btn.result-hit .odds-value::before { color: #95de64; }
+
+  /* 有投注的赔率按钮 */
+  .tb-odds-btn.has-bet {
+    border-color: #ff5000;
+    background: linear-gradient(135deg, #fffaf5, #fff0e6);
+  }
+  .tb-odds-btn.has-bet .odds-value {
+    color: #ff5000;
+  }
+  .odds-stake {
+    font-size: 10px;
+    color: #ff5000;
+    font-weight: 700;
+    margin-top: 2px;
+    background: #fff0e6;
+    padding: 1px 4px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* 投注信息区 */
+  .tb-bet-info {
+    margin: 0 18px 18px;
+    padding: 14px;
+    background: linear-gradient(135deg, #fffaf5, #fff5eb);
+    border: 1px solid #ffe0cc;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+  .tb-bet-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ffd0b0;
+  }
+  .tb-bet-total .label { color: #999; font-weight: 500; }
+  .tb-bet-total .amount {
+    color: #ff5000;
+    font-weight: 800;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tb-bet-total .amount::before {
+    content: "¥";
+    font-size: 12px;
+    margin-right: 1px;
+    font-weight: 600;
+  }
+  .tb-bet-potential {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .tb-bet-potential .label { color: #999; font-weight: 500; }
+  .tb-bet-potential .value {
+    color: #52c41a;
+    font-weight: 800;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 大字体开奖结果（占满框框） */
+  .tb-big-result {
+    margin: 0 18px 18px;
+    padding: 30px 20px;
+    border-radius: 12px;
+    text-align: center;
+    animation: bigResultPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .tb-big-result.full {
+    margin: 0;
+    border-radius: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    box-shadow: none;
+  }
+  @keyframes bigResultPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .tb-big-result.win {
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+    box-shadow: 0 4px 20px rgba(82, 196, 26, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .tb-big-result.lose {
+    background: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%);
+    box-shadow: 0 4px 20px rgba(255, 77, 79, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .tb-big-result::before {
+    content: "";
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .big-result-text {
+    font-size: 56px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    letter-spacing: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .big-result-amount {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    position: relative;
+    z-index: 1;
+  }
+  .big-result-match {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    margin-top: 12px;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== 弹窗 ===== */
+  .tb-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .tb-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .tb-modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .tb-modal-overlay.active .tb-modal {
+    transform: scale(1) translateY(0);
+  }
+  .tb-modal-header {
+    background: linear-gradient(135deg, #ff5000, #ff8c00);
+    color: #fff;
+    padding: 16px 20px;
+    font-size: 16px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tb-modal-body {
+    padding: 22px 20px;
+  }
+  .tb-modal-summary {
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .tb-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .tb-summary-row:last-child {
+    margin-bottom: 0;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+  }
+  .tb-summary-row .label { color: #999; font-weight: 500; }
+  .tb-summary-row .value {
+    font-weight: 700;
+    color: #333;
+    font-variant-numeric: tabular-nums;
+  }
+  .tb-summary-row .value.gold { color: #ff5000; font-size: 15px; }
+
+  .tb-form-label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .tb-form-input {
+    width: 100%;
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: #333;
+    font-size: 17px;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    transition: all 0.25s ease;
+    font-weight: 600;
+  }
+  .tb-form-input:focus {
+    outline: none;
+    border-color: #ff5000;
+    box-shadow: 0 0 0 4px rgba(255, 80, 0, 0.1);
+  }
+  .tb-form-input.error { border-color: #ff4d4f; }
+  .tb-form-hint {
+    font-size: 12px;
+    color: #999;
+    margin-top: 10px;
+    transition: all 0.2s ease;
+  }
+  .tb-form-hint.error { color: #ff4d4f; font-weight: 600; }
+  .tb-form-hint .highlight {
+    color: #52c41a;
+    font-weight: 800;
+    font-size: 14px;
+  }
+
+  .tb-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .tb-modal-btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
+    font-family: inherit;
+  }
+  .tb-modal-btn.cancel {
+    background: #f5f5f5;
+    color: #666;
+  }
+  .tb-modal-btn.cancel:hover {
+    background: #e8e8e8;
+    transform: translateY(-1px);
+  }
+  .tb-modal-btn.confirm {
+    background: linear-gradient(135deg, #ff5000, #ff8c00);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(255, 80, 0, 0.3);
+  }
+  .tb-modal-btn.confirm:hover {
+    box-shadow: 0 6px 20px rgba(255, 80, 0, 0.45);
+    transform: translateY(-2px);
+  }
+  .tb-modal-btn.confirm:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* ===== Toast ===== */
+  .tb-toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tb-toast {
+    background: #fff;
+    border-radius: 10px;
+    padding: 13px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    border-left: 4px solid #ff5000;
+    max-width: 320px;
+    color: #333;
+    animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(40px) scale(0.9); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  .tb-toast.success { border-left-color: #52c41a; }
+  .tb-toast.error { border-left-color: #ff4d4f; }
+  .tb-toast.info { border-left-color: #1890ff; }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 768px) {
+    .tb-header-top { flex-wrap: wrap; gap: 12px; }
+    .tb-main { padding: 14px 12px 30px; }
+    .tb-grid { grid-template-columns: 1fr; gap: 14px; }
+    .tb-balance-amount { font-size: 19px; }
+    .tb-logo-text { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航栏 ===== -->
+<header class="tb-header">
+  <div class="tb-header-top">
+    <div class="tb-logo">
+      <div class="tb-logo-icon">竞</div>
+      <div>
+        <div class="tb-logo-text">竞彩投注</div>
+        <div class="tb-logo-sub">胜平负 · 概率模拟</div>
+      </div>
+    </div>
+
+    <div class="tb-balance">
+      <div>
+        <div class="tb-balance-label">我的余额</div>
+        <div class="tb-balance-amount" id="balanceDisplay">10000.00</div>
+      </div>
+      <button class="tb-btn-edit" id="editBalanceBtn">修改</button>
+    </div>
+
+    <div class="tb-header-actions">
+      <button class="tb-btn-primary" id="drawAllBtn">一键开奖</button>
+      <button class="tb-btn-outline" id="refreshAllBtn">刷新</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 主内容区 ===== -->
+<main class="tb-main">
+  <div class="tb-category-bar">
+    <div class="tb-category-title">
+      今日热门赛事
+      <span class="tb-category-count" id="matchCount">共20场</span>
+    </div>
+    <div class="tb-category-hint">点击赔率投注 · 开奖有惊喜</div>
+  </div>
+  <div class="tb-grid" id="matchGrid"></div>
+</main>
+
+<!-- ===== 投注弹窗 ===== -->
+<div class="tb-modal-overlay" id="betModal">
+  <div class="tb-modal">
+    <div class="tb-modal-header">确认投注</div>
+    <div class="tb-modal-body">
+      <div class="tb-modal-summary" id="betSummary"></div>
+      <div>
+        <label class="tb-form-label">投注金额</label>
+        <input type="number" class="tb-form-input" id="betAmountInput" placeholder="请输入金额" min="1" step="1">
+        <div class="tb-form-hint" id="betHint">可用余额：<span id="availableBalance">0.00</span></div>
+      </div>
+      <div class="tb-modal-actions">
+        <button class="tb-modal-btn cancel" id="cancelBetBtn">取消</button>
+        <button class="tb-modal-btn confirm" id="confirmBetBtn">确认投注</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 修改余额弹窗 ===== -->
+<div class="tb-modal-overlay" id="balanceModal">
+  <div class="tb-modal">
+    <div class="tb-modal-header">修改账户余额</div>
+    <div class="tb-modal-body">
+      <div>
+        <label class="tb-form-label">新余额</label>
+        <input type="number" class="tb-form-input" id="newBalanceInput" placeholder="请输入新余额" min="0" step="0.01">
+        <div class="tb-form-hint">设置后立即生效，当前余额将被覆盖</div>
+      </div>
+      <div class="tb-modal-actions">
+        <button class="tb-modal-btn cancel" id="cancelBalanceBtn">取消</button>
+        <button class="tb-modal-btn confirm" id="saveBalanceBtn">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tb-toast-container" id="toastContainer"></div>
+
+<script>
+// ===== DOM元素缓存（减少重复查询） =====
+var DOM = {};
+function cacheDOM() {
+  DOM.balance = document.getElementById("balanceDisplay");
+  DOM.grid = document.getElementById("matchGrid");
+  DOM.drawBtn = document.getElementById("drawAllBtn");
+  DOM.refreshBtn = document.getElementById("refreshAllBtn");
+  DOM.toastContainer = document.getElementById("toastContainer");
+  DOM.betModal = document.getElementById("betModal");
+  DOM.balanceModal = document.getElementById("balanceModal");
+  DOM.betAmount = document.getElementById("betAmount");
+  DOM.newBalance = document.getElementById("newBalanceInput");
+}
+
+var REAL_ODDS = [[4,3.4,1.95],[1.53,4.5,5.75],[3.1,3.1,2.45],[1.25,5.75,13],[1.9,3.5,4],[1.66,3.8,5.25],[3.1,3.2,2.37],[9,5.75,1.3],[3.2,3.5,2.2],[5.5,4.2,1.6],[1.18,7.5,13],[1.8,3.75,4.33],[2.55,3.2,2.87],[2.37,3.4,3],[1.08,11,26],[1.7,3.5,5.75],[5.5,4.2,1.57],[3.2,3.2,2.35],[4.75,3.75,1.72],[2.5,3.5,2.75],[1.25,6,12],[1.95,3.6,3.8],[2.3,3.2,3.3],[2.5,3.4,2.8],[4.5,3.5,1.85],[1.55,4,6.5],[2.45,3.3,2.9],[3.1,3.5,2.25],[1.36,4.75,9],[5,3.5,1.75],[4.2,3.5,1.9],[1.5,4.6,6],[2.8,3.2,2.62],[6,4,1.57],[1.18,7.5,15],[2.9,3.5,2.4],[3.4,3.2,2.25],[1.28,5.5,11],[4.33,4,1.75],[1.7,3.75,5],[3,3.6,2.3],[1.83,3.25,5],[3.8,3.6,1.95],[1.2,7,13],[1.12,9.5,17],[2.15,3.3,3.5],[2.4,3.3,3],[2.7,3.2,2.75],[4.33,4,1.75],[5,3.8,1.7],[2.62,3.2,2.75],[1.36,5.25,8],[1.61,3.8,5.75],[3,3.6,2.25],[1.57,4,6],[2.2,3.4,3.3],[7,4.5,1.45],[2.62,3.2,2.8],[2.15,3.3,3.5],[3.1,3.2,2.45],[1.45,4.33,7.5],[1.85,3.6,4.33],[1.36,4.75,9],[1.7,4,4.75],[1.61,4.2,5.25],[3,3.25,2.4],[3.1,3.4,2.3],[2.1,3.6,3.4],[1.75,3.75,4.75],[2.87,3.5,2.4],[8.5,5.5,1.33],[2.15,3.25,3.5],[3.5,3.6,2.05],[1.12,9,19],[3.6,3.4,2.1],[2.3,3.5,3],[6.5,3.8,1.57],[2.5,3.4,2.8],[3.5,3.6,2.05],[1.6,3.8,6],[1.83,3.75,4.2],[1.18,7,15],[1.9,3.6,4],[1.65,3.8,5.5],[2.4,3.4,2.87],[1.95,3.5,3.9],[8,4.75,1.4],[2.62,3.3,2.7],[2.3,3.5,3],[3.1,3.6,2.2],[2.4,3.5,2.87],[2.6,3.3,2.75],[1.22,6.5,13],[1.14,8,19],[8.5,5,1.36],[3.2,3.3,2.3],[2.87,3.6,2.37],[3.4,3.5,2.1],[2.8,3.5,2.45],[2.2,3.2,3.5],[1.95,3.6,3.75],[4.75,4,1.7],[1.6,4,5.75],[1.25,6,12],[2.45,3.2,3],[1.57,3.9,6],[1.36,4.75,8.5],[3.1,3.25,2.37],[2.8,3.5,2.45],[4.75,4,1.7],[4.75,3.75,1.75],[2.45,3.3,2.9],[2.7,3.2,2.7],[2.62,3.4,2.7],[3.6,3.5,2.05],[6.5,4.75,1.45],[3,3.25,2.4],[1.45,4.75,6.5],[1.14,8,19],[1.7,4.2,4.5],[1.44,4.75,7],[2.2,3.4,3.3],[1.28,6,9],[3.5,3.3,2.15],[2.05,3.4,3.75],[2.25,3.2,3.4],[1.61,4,5.5],[1.28,5.75,10],[1.57,4,6],[1.95,3.5,3.9],[2.4,3.3,3],[2.37,3.5,2.87],[10,5.25,1.3],[1.95,3.6,3.8],[1.85,3.5,4.33],[9,5.25,1.33],[7.5,5.25,1.36],[1.6,4.2,5.25],[1.95,3.75,3.75],[4.75,3.6,1.75],[2.3,3.3,3.2],[2.45,3.2,3],[8,4.75,1.4],[12,7,1.2],[1.95,3.6,3.8],[1.5,4.33,6.5],[1.36,5,8.5],[2.37,3.4,3],[3.4,3.5,2.1],[2.25,3.3,3.3],[1.14,8,19],[1.61,4,5.5],[1.25,5.75,12],[1.2,7,13],[7,4.5,1.45],[3.6,3.6,2],[1.66,4.1,4.75],[2.3,3.2,3.3],[3.3,3.3,2.25],[1.14,8.5,15],[2.25,3.1,3.5],[2.15,3.3,3.5],[2.1,3.6,3.3],[1.22,6.5,13],[1.12,9,19],[3.9,3.8,1.83],[13,7.5,1.18],[7,4.2,1.5],[5.25,4.75,1.53],[1.18,7.5,13],[8,4.75,1.4],[1.72,3.8,4.75],[1.8,3.9,4.2],[5.25,3.8,1.65],[1.9,3.4,4.2],[6.5,4.75,1.44],[1.65,3.75,5.5],[3.75,3.5,2],[3.4,3.6,2.1],[8,5.5,1.33],[1.4,4.5,7.5],[19,8,1.14],[1.36,5,9],[5.75,4.75,1.5],[5,4.2,1.61],[3.1,3.4,2.3],[3,3.3,2.4],[2.75,3.2,2.62],[2.05,3.5,3.5],[3.1,3.5,2.25],[1.53,4.33,6],[2.05,3.4,3.6],[1.28,5.5,10],[2.05,3.3,3.8],[1.65,4,5],[2,3.6,3.6],[3.75,3.5,2],[2.25,3.2,3.4],[2.87,3.5,2.4],[1.3,5.5,10],[1.61,4.2,5],[4.75,3.75,1.72],[3,3.5,2.3],[4.5,3.7,1.8],[2,3.5,3.75],[2.75,3.25,2.62],[3.2,2.8,2.6],[2,3.5,3.75],[1.85,3.8,4],[10,6.5,1.25],[1.36,4.75,9],[6,4.2,1.53],[2.5,3.25,2.9],[1.61,4.2,5],[2.2,3.25,3.5],[2.5,3.25,2.87],[1.55,4.2,5.75],[5.5,4,1.61],[1.1,9.5,23],[3.5,3.25,2.15],[1.6,4,5.5],[1.8,3.8,4.2],[1.25,6.5,10],[3.5,3.2,2.2],[1.6,4,5.5],[2.55,3.1,3],[2.25,3.5,3],[3.5,3.3,2.05],[15,8,1.16],[10,5.25,1.28],[2.7,3.3,2.62],[1.7,3.6,5.5],[2.9,3.5,2.3],[1.72,3.75,4.75],[1.7,4,4.75],[1.44,4.2,8],[1.65,3.6,5.75],[1.66,3.5,6],[5.5,3.8,1.65],[1.1,9,23],[2.1,3.5,3.5],[1.28,6,10],[3.9,3.8,1.85],[2.25,3.3,3.25],[4.6,3.8,1.75],[3.1,3.3,2.3],[1.16,8,15],[1.65,3.8,5.5],[1.53,4.33,6],[4.2,3.6,1.85],[2.5,3.2,3],[1.9,3.6,4],[1.3,5.5,9.5],[2.2,3.3,3.5],[10,5.75,1.28],[2.05,3.3,3.8],[2.9,3.4,2.4],[1.75,4,4.2],[2.3,3.5,3],[6.5,4.33,1.5],[2.75,3.2,2.62],[2.9,3.1,2.5],[2.3,3.1,3.4],[1.28,5.75,9.5],[6,4,1.57],[1.4,4.75,7.5],[1.57,3.8,5.75],[11,4.75,1.3],[2,3.75,3.5],[1.75,3.6,4.5],[2.7,3.5,2.5],[6,4.33,1.5],[2.15,3.2,3.6],[2.2,3.4,3.25],[1.3,5.25,11],[2.3,3.2,3.3],[1.55,4.2,5.75],[1.6,4.2,5.25],[2.25,3.3,3.3],[1.5,4.5,6],[10,5,1.33],[3.3,3.3,2.25],[3.5,4,1.9],[2.4,3.25,3.1],[2.1,3.5,3.4],[3,3.3,2.4],[2.15,3.4,3.4],[1.72,3.8,4.75],[1.12,9.5,17],[1.5,4,7],[15,6.5,1.2],[1.33,5,10],[2.37,3.75,2.75],[3,3.1,2.55],[1.5,4.5,6],[1.75,3.8,4.5],[1.5,4.33,6.5],[4,3.4,1.95],[2.62,3.1,2.87],[2.25,3.1,3.4],[4.6,3.75,1.75],[1.61,3.8,5.75],[3.8,3.6,1.95],[2.7,3.4,2.55],[3.2,3.4,2.25],[2.62,3.3,2.62],[2.37,3.3,2.9],[2.87,3.2,2.55],[2,3.75,3.5],[1.53,4,6.5],[1.25,6.5,10],[3.8,3.6,1.95],[2.7,3.3,2.55],[2.2,3.4,3.3],[1.7,3.8,5],[1.4,5,7],[1.83,3.6,4.33],[2.25,3.4,3.25],[2.25,3.4,3.25],[1.16,7,17],[2.75,3.25,2.62],[2.05,3.5,3.5],[2.8,3.4,2.5],[1.1,10,26],[3.5,3.3,2.15],[4.33,3.5,1.85],[2.1,3.4,3.6],[2.7,3,2.87],[1.5,4.33,6.5],[1.18,7,15],[2.05,3.5,3.5],[3.2,3.4,2.25],[8.5,5,1.36],[1.4,4.5,9],[2.4,3.3,3.1],[2.6,3.3,2.75],[2.7,3.2,2.75],[8.5,6,1.3],[5,3.6,1.75],[1.44,4.75,7],[4.33,3.8,1.8],[1.72,4,4.5],[2.15,3.5,3.3],[3,3.3,2.4],[1.33,5,9.5],[1.65,4,5],[2.8,3.5,2.45],[1.4,5,7],[1.45,4.5,7],[2.6,3.3,2.75],[4.5,3.8,1.75],[1.16,7,17],[7.5,4.75,1.4],[4.75,4.2,1.65],[1.44,4.75,7],[4.2,3.6,1.83],[11,6,1.25],[2.05,3.75,3.5],[1.33,5.25,9],[2,3.5,3.75],[2.62,3.5,2.62],[3.8,3.5,1.95],[7.5,5,1.4],[1.45,4.75,6.5],[2.05,3.6,3.5],[4.33,3.6,1.83],[7.5,5.5,1.33],[1.9,3.4,4.33],[2.05,3.5,3.6],[1.4,4.75,8],[1.36,4.75,9],[2.45,3.8,2.62],[2.37,3.5,2.9],[2.25,3.4,3.2],[1.18,7.5,15],[3,3.6,2.25],[1.85,4,3.8],[1.14,8.5,15],[1.16,8,17],[9.5,6.5,1.25],[2.55,3,3.1],[2.8,3.25,2.6],[3.3,3.4,2.2],[7,4.75,1.44],[2.25,3.2,3.4],[4.2,3.4,1.9],[1.72,4,4.5],[1.44,4.2,8],[1.53,4.2,6.5],[3.8,3.3,2.05],[1.5,4.2,7],[2.25,3.2,3.4],[3.1,3.4,2.3],[2.45,3.4,2.87],[4,3.75,1.85],[1.44,4.33,7.5],[1.22,5.75,17],[5,4.33,1.6],[3.5,3.2,2.2],[2.62,3.25,2.75],[2.6,2.9,3.1],[1.75,3.6,4.75],[2.4,3.2,3.1],[5,3.6,1.72],[1.53,4.2,6],[4.2,3.8,1.8],[1.4,4.75,7.5],[3.2,3,2.45],[2.55,3.2,2.87],[1.75,3.4,5.25],[2.1,3.4,3.5],[1.72,3.6,5.25],[4.33,3.3,1.9],[2.4,3.2,3.1],[5,3.6,1.75],[1.36,5.25,8],[1.8,3.4,4.75],[3.1,3.25,2.37],[1.45,4.33,7],[2.37,2.9,3.4],[1.65,3.6,6],[2.4,3.1,3.2],[3.1,3,2.55],[3.5,3,2.3],[2.55,3.2,2.87],[2,3.2,4.2],[3.8,3.8,1.9],[1.28,5.75,10],[6,3.5,1.66],[1.85,3.5,4.33],[2.6,3.4,2.7],[1.8,3.5,4.75],[1.61,3.8,6],[1.22,6.5,12],[1.5,4.2,6.5],[4.2,3.4,1.9],[2.37,3.25,3],[6,4.33,1.5],[7.5,4,1.5],[2.6,3.2,2.8],[1.57,3.8,6.5],[1.5,4.75,5.75],[2.7,3.2,2.75],[1.4,5.5,6.5],[1.4,4.5,9],[1.6,3.8,6],[1.75,3.6,4.75],[1.61,4,5.5],[1.53,3.75,7.5],[2.15,3.4,3.4],[2.1,3.2,3.4],[3.4,3,2.3],[1.9,3.5,4],[3.3,3.2,2.3],[5,4,1.66],[3.6,3.1,2.2],[2,3.6,3.6],[4.8,3.4,1.72],[2.5,2.9,3.25],[1.4,4.5,8.5],[1.8,3.5,4.75],[3.4,3.25,2.2],[1.66,3.75,5.25],[1.5,4.33,6.5],[3.5,3.3,2.15],[1.66,3.6,5.75],[1.72,3.5,5.25],[1.66,3.8,5.25],[2.5,2.9,3.2],[2.7,3,2.87],[2.45,3,3.2],[1.44,4.2,8],[2.75,3.6,2.45],[1.83,3.75,4.2],[1.61,3.7,6],[2.5,3,3.1],[2.3,3,3.5],[2.9,3,2.62],[1.3,5.5,9.5],[5.5,3.3,1.75],[4.33,3.75,1.8],[1.85,3.5,4.5],[1.3,5.5,9],[2.87,3.4,2.45],[2.6,2.8,3.25],[5.5,3.8,1.65],[7.5,4.5,1.44],[1.53,4,7],[2.9,3.4,2.45],[1.28,5.5,11],[2.5,3,3.2],[1.6,3.8,6],[2.45,3,3.2],[2.1,3.2,3.8],[2.37,3.25,3.1],[1.95,3.4,4],[1.36,4.75,9],[1.85,3.4,4.5],[3.3,3.6,2.1],[2.5,3,3.2],[1.33,5.5,8],[1.5,4,7],[4.5,3.2,1.95],[2.05,3,4.33],[3.1,3.3,2.35],[3,3.3,2.45],[3.5,3.3,2.15],[2.75,3.3,2.55],[1.44,4.33,8.5],[1.44,4.33,8],[1.36,5.25,7.5],[2,3.1,4.33],[7,4.5,1.45],[3.6,3.4,2.1],[1.72,3.8,4.75],[1.8,3.5,4.75],[1.36,4.75,9.5],[2.9,3.1,2.55],[2,3.4,3.9],[2.3,2.9,3.75],[2.7,3.4,2.6],[1.66,4.2,4.75],[3.2,3.2,2.3],[8,3.8,1.5],[1.7,4,4.75],[1.8,3.4,4.75],[1.44,4.75,7],[2.37,3.1,3.25],[2,3.3,4],[1.5,4.5,6.5],[1.3,5.25,11],[3.3,3.3,2.25],[2.15,3.1,3.8],[2.05,3.1,4.2],[2.4,3.2,3.1],[2.1,3.25,3.75],[3.5,3,2.3],[2.5,3,3.1],[2.05,3.3,3.8],[2.45,2.9,3.2],[1.75,3.5,5],[2.5,3,3.1],[1.72,3.8,4.75],[4,3.5,1.9],[2.25,3.3,3.3],[2.05,3.5,3.6],[2.6,3.1,2.9],[1.95,3.4,4],[1.72,3.6,5],[2.15,3.3,3.5],[1.3,5.5,10],[2.75,3,2.8],[2.5,3,3.1],[2.15,3.25,3.5],[2.4,2.9,3.4],[1.2,7.5,11],[2.7,3.2,2.75],[1.33,5,9.5],[2.5,3.2,2.9],[6,3.7,1.61],[3.4,3.5,2.1],[1.8,3.8,4.2],[5.5,3.75,1.65],[1.36,4.5,9.5],[2.5,3.1,3],[3.5,3.1,2.25],[1.72,3.75,4.75],[3.4,3.4,2.15],[1.4,5,7],[3.1,3,2.5],[4.75,3.3,1.85],[2.2,3.25,3.4],[1.83,3.3,4.75],[4.5,3.8,1.75],[1.37,5,8],[2.5,3.4,2.8],[1.61,3.4,7.5],[4,3.3,1.95],[1.75,3.3,5.75],[2.8,3.2,2.62],[1.9,3.25,4.5],[4.5,3.6,1.8],[1.45,4.33,7],[3.25,3.1,2.37],[1.85,3.5,4.33],[3.3,3.25,2.25],[2.1,3.2,3.8],[3.25,3.25,2.25],[1.8,3.5,5],[1.44,4.33,8],[1.75,3.5,5.25],[1.44,4.2,8.5],[2.5,3.2,3],[1.16,8,15],[1.66,3.5,6],[2.75,3,2.8],[6,4,1.57],[1.95,3.1,4.5],[2.37,3.1,3.3],[1.83,3.4,4.6],[1.9,3.4,4.33],[3.6,3.2,2.15],[2.87,3.2,2.6],[2.25,3.4,3.2],[2.37,3.5,2.9],[1.25,6,11],[1.6,3.8,6],[1.45,4.33,7.5],[3.8,3.4,2.05],[2.5,3.5,2.7],[2.15,3.25,3.5],[1.45,4.2,8],[2.8,3.2,2.6],[3.4,3.6,2.1],[1.4,4.5,9],[5,3.6,1.75],[3.4,3.1,2.3],[1.33,5.25,9],[3,3,2.62],[4,3.4,1.95],[3.9,3.25,2.05],[3.2,2.9,2.55],[1.22,6.5,12],[3.4,3.3,2.2],[3.6,3.5,2.05],[1.6,4,5.75],[2.37,3,3.4],[1.6,3.8,6],[2.05,3.4,3.75],[2.4,3.1,3.1],[1.95,3,4.75],[5,3.8,1.66],[1.61,3.8,6],[1.5,4.2,7],[2.2,3.25,3.5],[1.85,3.4,4.75],[1.6,4.2,5.25],[2,3.3,4],[3.4,3.2,2.25],[4.5,3.1,1.95],[3.5,3.4,2.1],[2.15,3,3.6],[1.75,3.6,4.5],[1.6,4.2,5.25],[2.7,3.1,2.7],[7.5,4.33,1.4],[1.75,3.4,5.25],[3,3.2,2.37],[1.57,4,5.5],[1.36,4.6,9.5],[2.3,3.3,3.2],[2.25,3.2,3.4],[1.65,4.2,4.75],[2.37,3.2,3.2],[3.4,3.1,2.3],[2.3,3.3,3.2],[1.53,4,7],[1.33,4.75,10],[6,4,1.57],[1.72,3.2,6],[2,3.3,4],[2.62,3.25,2.7],[1.9,3.5,4.2],[4,3.25,2],[2.05,3.5,3.5],[4.75,3.5,1.83],[2.2,3.5,3.2],[2.05,3.25,3.8],[2.15,3.6,3.25],[2.15,3,4],[3.8,3.6,1.95],[4,3.6,1.9],[1.33,4.8,10],[1.45,4.2,7.5],[1.9,3.5,4],[2.6,3.1,2.9],[1.85,3.3,4.75],[1.45,4.5,7],[1.6,4,5.75],[1.5,4.33,7],[3.4,3.2,2.25],[4,3.4,1.95],[2.3,3.4,3.1],[1.4,4.5,8.5],[1.95,3.3,4.33],[2.75,3.2,2.7],[3.9,3.4,2],[6,5,1.45],[2.2,3.3,3.3],[2.1,3.5,3.4],[2.7,3,2.9],[2.7,3.1,2.8],[2.15,3.2,3.7],[3.1,3.1,2.5],[2.37,3.4,3],[1.4,4.5,8.5],[1.75,3.6,5],[3,3.4,2.4],[1.2,6.5,15],[1.95,3.3,4.2],[1.55,4,6],[1.44,4.75,6.5],[1.3,5.25,10],[2.15,3.1,3.75],[5,3.75,1.66],[2.37,3.2,3.1],[3.5,3.5,2.1],[3.4,3,2.3],[3.5,3.5,2.1],[1.3,5.5,10],[1.65,3.5,6],[3.4,3.5,2.1],[1.5,4.5,6],[2.2,3.5,3.2],[3,3,2.55],[2.8,3.2,2.7],[2.8,3.2,2.62],[3.3,3.1,2.37],[1.3,5.5,9],[2.75,3.1,2.7],[3.3,3.6,2.1],[1.95,3.5,4],[1.55,4,6.5],[1.7,3.75,5],[1.9,3.4,4.33],[3,3.6,2.25],[2.05,3.1,4.2],[2.3,3.3,3.1],[2.3,3.3,3.2],[2.1,3.5,3.5],[3.1,3.4,2.2],[3.2,3.3,2.25],[1.44,5,6],[2.1,3.4,3.5],[2.7,2.9,3],[1.61,4,5.5],[6,3.6,1.65],[1.66,3.6,5.5],[4.2,3.8,1.8],[1.45,5.25,5.5],[2.5,3.4,2.8],[1.53,4.2,6],[2.25,3,3.6],[1.5,4.33,6],[3.3,3.3,2.2],[1.65,3.8,5.5],[3.75,3.25,2.1],[2.8,3.8,2.25],[1.57,3.8,6.5],[2.1,3.6,3.3],[1.65,4.5,4.33],[1.85,4,3.8],[2.75,3.3,2.62],[3.1,2.87,2.62],[4.2,3.7,1.83],[1.44,4.33,7.5],[3.3,3.4,2.2],[2.1,4,3],[2.5,3.3,2.87],[2.62,3.3,2.7],[1.33,5.25,9],[2.62,3.3,2.62],[4.6,4,1.7],[5.5,4.33,1.55],[1.65,4,5],[7.5,4.33,1.45],[1.22,6.5,12],[1.72,3.8,4.75],[1.95,3.4,4],[4,3.6,1.9],[1.7,3.75,5],[5.5,4.33,1.55],[1.33,5.5,8],[1.33,4.75,9.5],[2.2,3.4,3.25],[1.22,6.5,12],[6,4.5,1.5],[2,3.6,3.6],[1.44,4.5,7],[5.5,4.33,1.55],[1.8,3.8,4.2],[2.4,3.6,2.8],[1.55,4.33,5.5],[5,4,1.61],[2,3.5,3.75],[3.2,3.4,2.3],[1.57,4.2,5.75],[2.2,3.6,3.1],[1.57,4.75,5],[2.1,3.7,3.2],[1.72,4,4.33],[3.3,3.3,2.25],[1.36,5,8.5],[10,5.5,1.3],[2.55,3.6,2.6],[2.45,3.4,2.9],[1.44,4.75,7],[4,3.8,1.83],[2.1,3.4,3.5],[4.5,3.6,1.83],[1.95,3.5,3.75],[1.5,4.75,6],[3.75,3.6,1.9],[3.5,3.4,2.05],[8,5.5,1.33],[2,3.75,3.4],[1.25,6,12],[4.2,3.6,1.83],[3.25,3.5,2.15],[1.55,4.2,5.5],[7,4.5,1.45],[1.9,3.75,3.8],[2.75,3.25,2.62],[1.3,5.75,9],[2.6,3.75,2.5],[1.4,5,7.5],[3.1,3.4,2.3],[2.62,3.5,2.6],[1.25,6,11],[3.6,3.5,2.05],[1.85,3.5,4.33],[2.87,3.3,2.45],[4.5,3.5,1.8],[4.33,4.2,1.7],[3.1,3.6,2.2],[2.1,3.5,3.5],[1.65,4,5.25],[3.9,3.5,1.95],[1.4,5,7],[2.05,3.75,3.4],[2.1,3.4,3.5],[3.3,3.5,2.15],[1.55,4.2,5.75],[2.55,3.4,2.75],[5.75,4.33,1.55],[3.1,3.5,2.25],[2.25,3.4,3.2],[1.4,4.5,8.5],[1.85,3.8,4],[4.2,3.75,1.83],[1.7,3.7,5],[1.8,3.8,4.2],[2.7,3.4,2.62],[1.57,4.2,5.5],[3.35,3.6,2.1],[1.4,5,7.5],[1.65,4,5.25],[3.1,3.6,2.2],[2.87,3.5,2.4],[2.05,3.6,3.4],[2.3,3.5,3],[1.95,3.4,4],[1.6,4,5.5],[1.44,4.75,6.5],[4.33,4.2,1.72],[2.4,3.4,2.9],[5,4.2,1.61],[5.75,4.75,1.5],[1.95,3.6,3.75],[1.3,5.5,9.5],[1.9,3.8,3.8],[4,3.8,1.85],[1.9,3.75,3.8],[1.36,5,8.5],[1.53,4.5,5.75],[2.05,3.4,3.75],[1.75,4.1,4.2],[10,5.5,1.3],[2.3,3.5,3],[1.8,3.6,4.5],[2.1,3.75,3.2],[3.6,3.6,2],[1.57,4.2,5.5],[6,4.5,1.5],[5.75,4.5,1.53],[2.37,3.6,2.87],[2.4,3.5,2.8],[1.3,5.5,9.5],[1.36,5,8],[3.25,3.5,2.15],[1.25,6.5,9.5],[3,3.4,2.35],[3.1,3.5,2.25],[1.6,4.2,5.25],[1.61,4,5.5],[3.1,3.25,2.37],[2.2,3.5,3.25],[4.75,3.9,1.7],[1.7,4,4.5],[2.05,3.4,3.7],[1.83,3.6,4.33],[3.4,3.4,2.15],[2.9,3.5,2.37],[2.2,3.5,3.25],[8,5,1.36],[1.75,3.6,4.75],[1.53,4.5,5.5],[3,3.5,2.3],[1.72,4,4.5],[1.8,3.8,4.33],[1.22,6,12],[1.7,3.8,5],[9.5,5.5,1.3],[1.61,4,5.25],[3.1,3.6,2.2],[1.18,7.5,13],[5,4,1.66],[4,3.9,1.8],[1.72,3.8,4.75],[1.66,3.8,5.25],[1.18,7,15],[3.8,3.8,1.9],[2.45,3.5,2.8],[2.87,3.3,2.5],[3.3,3.75,2.05],[3.6,3.5,2],[3.5,3.6,2.05],[1.25,6,12],[2.6,3.25,2.8],[3.5,3.2,2.25],[3.2,3.3,2.25],[1.3,5.5,9.5],[9,4.75,1.36],[4.2,3.5,1.9],[2.2,3.25,3.5],[3.8,3.8,1.9],[1.33,5,10],[2.7,3.5,2.5],[1.16,8,15],[1.4,5,7.5],[1.53,4.33,6],[15,8,1.16],[1.7,4.33,4.33],[4.1,3.7,1.83],[3,3.25,2.4],[1.85,3.8,3.9],[2.62,3.75,2.45],[1.8,3.8,4.33],[2.2,3.4,3.3],[2.25,3.5,3.1],[7.5,5.25,1.36],[1.18,6.5,17],[2,3.6,3.6],[4.2,3.6,1.85],[1.3,5.5,10],[1.55,4.33,5.5],[2.9,3.5,2.37],[4.5,3.9,1.75],[1.22,6.5,12],[1.85,3.75,4],[1.6,4.4,5],[3.5,3.5,2.05],[1.57,4.33,5.25],[1.9,3.7,3.8],[1.9,3.6,4],[2.5,3.8,2.55],[6,4,1.57],[1.4,5,7.5],[3.5,3.6,2.05],[2.1,3.3,3.6],[3.3,3.5,2.15],[1.4,5,7],[1.36,5,8],[2.75,3.3,2.55],[3,3.2,2.45],[7,4.5,1.45],[1.4,4.75,7.5],[2.2,3.5,3.2],[2.62,3.5,2.55],[1.36,5,8.5],[2.87,3.75,2.3],[4,3.4,1.95],[1.33,5,9.5],[1.45,4.2,7.5],[1.95,3.6,3.8],[3.5,3.3,2.15],[1.1,9.5,21],[3.2,3.5,2.2],[5.25,4.1,1.61],[1.14,8,17],[2.7,3.3,2.62],[2.1,3.6,3.3],[4,4.2,1.8],[2.62,3.3,2.7],[1.36,5.5,7.5],[1.8,3.75,4.5],[2.37,3.5,2.9],[1.25,6.5,11],[2,3.6,3.6],[2.8,3.8,2.3],[7.5,4.75,1.4],[3.1,3.3,2.37],[1.53,4.33,6],[2.87,3.4,2.5],[1.7,4,4.75],[2.75,3.4,2.55],[1.5,4.2,7],[1.4,4.75,7.5],[1.95,3.8,3.6],[1.83,3.75,4.33],[1.83,3.6,4.2],[3.4,3.9,2],[2.8,3.5,2.37],[3.75,3.6,1.95],[1.57,3.75,6.5],[2.2,3.4,3.2],[1.95,3.75,3.6],[9,5,1.36],[2.6,3.3,2.7],[2.5,3.2,2.9],[1.28,6,9],[2.9,3.3,2.45],[6.5,4.33,1.5],[1.8,3.8,4.33],[1.5,4,7],[9,5.25,1.33],[3.5,3.4,2.15],[5,4,1.65],[2.7,3.6,2.45],[1.65,3.8,5.5],[1.53,4,6],[4.5,3.6,1.8],[2.75,3.4,2.5],[1.44,5,6.5],[1.14,7.5,19],[1.9,3.4,4.33],[2.55,3.4,2.7],[3.6,3.2,2.1],[2.5,3.2,2.87],[2.8,3.2,2.5],[1.95,3.5,3.6],[3.25,3.4,2.2],[1.22,6.25,13],[2.05,3.3,3.6],[3.8,4.2,1.8],[2.62,3.3,2.62],[5.5,3.75,1.65],[1.36,5.25,7.5],[1.61,4,5.5],[3.25,3.6,2.15],[1.33,5.25,9],[3.1,3.5,2.25],[5.5,3.6,1.66],[1.33,5.5,8.5],[1.66,4.2,4.75],[3.2,3.1,2.4],[1.44,4.5,7],[1.5,4.5,6.5],[5.25,4,1.6],[2.62,3.3,2.7],[2.62,3.5,2.55],[1.2,7,13],[2.55,3.4,2.75],[4.5,3.6,1.8],[2.1,3.4,3.5],[1.72,4.2,4.2],[4,3.6,1.9],[1.55,4.33,5.5],[2.4,3.3,3],[1.8,3.5,4.75],[4,3.8,1.85],[2.8,3.4,2.5],[1.83,3.4,4.75],[1.4,4.5,8.5],[2,3.5,3.8],[1.36,5.25,8],[6,4,1.6],[4.2,3.5,1.9],[1.75,3.8,4.5],[3.3,3.75,2.1],[3.5,3.3,2.15],[1.28,5.75,11],[4.2,3.5,1.9],[2.1,3.5,3.5],[9.5,5.5,1.3],[1.33,5,11],[2.87,3.6,2.37],[1.83,3.75,4.2],[1.8,3.75,4.5],[1.36,5,8.5],[1.33,5,10],[1.65,3.8,5.5],[1.9,3.6,4],[1.65,4.1,5],[1.5,4.5,6],[1.66,3.6,5.5],[6.5,4.33,1.5],[1.61,4,5.5],[1.75,3.75,4.6],[5.5,3.8,1.66],[2.8,3.25,2.6],[5.5,4,1.6],[2.2,3.25,3.5],[2.9,3.4,2.45],[4.2,3.9,1.8],[1.7,4,4.75],[1.6,4,5.75],[7,5,1.4],[2.45,3.6,2.75],[1.45,4.75,6.5],[2.75,3.25,2.62],[5.5,3.75,1.65],[1.2,6.5,15],[2.7,3.4,2.55],[1.61,4,5.5],[6,4.2,1.55],[1.5,4.5,6],[1.25,6.5,9.5],[1.75,3.6,4.5],[1.14,9,15],[3.75,3.3,2.05],[3.6,3.5,2.05],[2.3,3.6,2.87],[1.44,4.75,6.5],[6.5,4.75,1.45],[2.87,3.5,2.35],[2.37,3.4,3],[4.33,4.2,1.7],[2.37,3.3,3],[3.1,3.75,2.1],[1.83,3.9,4],[2.3,3.5,3],[1.25,6.5,11],[2.4,3.8,2.62],[1.8,4,3.8],[1.75,4.2,4.2],[7,5.25,1.4],[3.75,3.8,1.9],[2.25,3.6,2.9],[3.3,3.6,2.1],[2.25,3.6,3],[1.22,7,11],[1.8,3.8,4.2],[1.75,4,4.33],[5.75,4.5,1.53],[1.14,8,19],[6.5,4.75,1.45],[1.7,4,4.75],[4.5,3.8,1.72],[4.33,4.5,1.66],[3.2,3.75,2.1],[2.8,3.4,2.5],[1.83,4,4],[2.75,3.4,2.55],[1.53,4.5,5.75],[1.4,5.5,6.5],[8,5.5,1.33],[2.55,3.4,2.75],[1.36,5.25,7],[2.62,3.5,2.62],[1.57,4.5,5.25],[5.5,4.75,1.5],[2.55,3.4,2.7],[3,3.4,2.37],[2.2,3.75,3],[2,3.6,3.6],[1.11,11,16],[1.4,5.5,6.5],[4.75,3.8,1.72],[3.3,3.6,2.1],[1.83,3.75,4.2],[1.66,4,5],[2.15,3.6,3.2],[1.14,9,15],[2.45,3.25,2.9],[3.6,3.5,2.05],[2.2,3.6,3.1],[5.5,4.33,1.57],[2,3.75,3.5],[3.1,3.8,2.15],[1.7,3.75,5],[3,3.8,2.2],[2,3.75,3.5],[2.8,3.4,2.5],[1.44,4.75,7],[1.75,3.75,4.2],[4.2,4,1.8],[1.06,13,29],[3.5,3.6,2.05],[2,3.6,3.6],[4.5,4,1.72],[3.3,3.75,2.1],[1.36,5.25,8],[1.8,3.8,4.33],[23,13,1.07],[2,3.75,3.5],[2.75,3.5,2.5],[1.72,4,4.5],[1.3,5.5,10],[1.66,3.8,5.5],[4.33,4.2,1.72],[3,3.5,2.3],[1.85,3.6,4.33],[1.4,5,7],[1.22,6.5,12],[2.9,3.4,2.4],[2.62,3.75,2.45],[2.1,3.6,3.4],[1.2,7,12],[2.05,3.5,3.6],[1.16,8,15],[5,4,1.61],[2,3.9,3.3],[1.4,5,7.5],[1.75,3.8,4.5],[4,4,1.85],[2.37,3.5,2.9],[2.7,3.25,2.7],[1.5,4.75,6],[4.75,4.6,1.6],[2.25,3.2,3.4],[1.61,3.8,5.75],[1.14,9,15],[6,4.5,1.5],[1.12,8.5,21],[2.1,3.3,3.6],[3.75,3.5,2],[3.3,3.8,2.05],[2.37,3.5,2.9],[3.2,3.5,2.2],[1.66,4,4.75],[3.75,3.5,2],[1.45,5,6],[1.36,5,8],[1.9,3.75,4],[9,5.75,1.3],[4.2,4,1.75],[3,3.3,2.4],[1.36,5,8.5],[2.62,3.6,2.55],[1.16,8,15],[3.8,3.8,1.9],[1.8,3.8,4.33],[1.5,4.2,6.5],[1.9,3.8,3.8],[3.5,3.75,2],[2.05,3.5,3.6],[3.75,3.75,1.95],[15,8,1.16],[4.2,3.5,1.9],[1.33,5.5,8],[4,4.33,1.75],[1.36,5,9],[1.28,6,10],[2,3.5,3.8],[2,3.6,3.6],[2.1,3.6,3.4],[2.9,3.3,2.45],[3.2,3.4,2.25],[2.7,3.8,2.37],[4.75,4.33,1.65],[2.05,3.25,3.8],[2.9,3.5,2.37],[1.07,12,27],[2.3,3.5,3],[1.85,4,3.8],[3.5,3.7,2],[2.3,3.4,3.1],[3.4,3.5,2.1],[1.9,3.8,3.75],[1.22,6.5,12],[2.5,3.3,2.87],[4,4.33,1.75],[2.2,3.4,3.3],[1.83,3.75,4.2],[1.65,4,5],[1.2,7.5,12],[6,4.5,1.5],[2.3,3.5,3],[2,3.3,4],[1.75,4.2,4.2],[1.8,3.75,4.33],[4.75,4,1.7],[3.2,3.8,2.1],[9,6,1.28],[2.3,3.4,3.1],[1.9,3.5,4.2],[2.1,3.5,3.4],[1.95,3.8,3.6],[6.5,4.75,1.45],[1.1,10,21],[1.8,4,4],[2.4,3.4,2.9],[1.18,8,13],[2.9,3.4,2.37],[2.25,3.5,3],[2.9,3.4,2.37],[1.95,3.8,3.5],[1.2,7,13],[5.25,4.33,1.57],[2.75,3.5,2.45],[1.9,3.9,3.6],[1.33,5.75,8],[1.6,4,5.75],[3.75,3.6,1.95],[1.53,4.33,5.75],[1.8,3.8,4.2],[1.8,3.75,4.33],[3.5,3.9,1.95],[2.75,3.5,2.5],[3.5,3.4,2.1],[1.44,5,5.75],[8,5.75,1.33],[1.65,3.75,5.5],[6,4,1.57],[2.87,3.5,2.4],[1.95,3.6,3.8],[2.55,3.8,2.45],[3.3,3.5,2.15],[1.95,3.6,4],[1.75,3.75,4.75],[1.9,3.6,4],[5,3.6,1.75],[3,4,2.1],[1.44,4.5,7],[2.15,3.6,3.2],[3.2,3.4,2.25],[1.53,4.33,6],[11,6.5,1.2],[2.15,3.6,3.25],[2.75,3.3,2.6],[3.4,3.6,2.1],[2.3,3.5,3],[2.6,3.4,2.7],[2.7,3.4,2.62],[1.4,5.5,6],[1.95,4.2,3.3],[1.57,3.8,6],[1.44,4.75,7],[10,7.5,1.22],[2.2,3.6,3.2],[2.15,3.3,3.5],[3,3.25,2.45],[1.65,4.33,4.75],[1.4,4.75,7],[4,3.75,1.83],[1.5,4.33,5.75],[3.1,3.75,2.15],[3.1,3.4,2.3],[3,3.25,2.45],[2.2,3.4,3.3],[2.7,3.5,2.55],[2.25,3.5,3.1],[1.07,13,26],[1.6,4.2,5.25],[6.5,4.2,1.53],[1.5,4.5,5.75],[1.55,4.33,5.5],[3.6,3.6,2],[1.36,5.25,8],[2,3.4,3.75],[2.6,3.3,2.75],[6,5,1.44],[5,4,1.65],[5,4.33,1.61],[2.5,3.25,2.9],[1.4,5.75,6],[1.72,3.75,4.75],[3.3,3.4,2.15],[1.61,4.2,5.25],[2.2,3.2,3.5],[3.1,3.6,2.15],[2.62,3.6,2.55],[2.1,3.5,3.4],[4.75,4.75,1.55],[2.1,3.5,3.5],[1.57,4.33,5.25],[1.61,4.2,5.25],[1.28,6,10],[1.9,3.5,4.2],[8.5,5,1.36],[4,3.8,1.85],[2.8,3.6,2.37],[4.75,4,1.7],[4.2,4.2,1.72],[1.6,3.75,6],[2,3.6,3.6],[1.16,8,13],[1.44,4.5,7.5],[3,3.4,2.3],[3.5,3.75,2],[2.25,3.3,3.3],[3,3.4,2.35],[1.44,4.75,6.5],[5.5,4.75,1.5],[1.5,4.33,6.5],[1.4,5.25,6],[2.5,3.6,2.62],[2.8,3.4,2.5],[2.25,3.4,3.2],[3.3,3.3,2.25],[3.9,4.1,1.8],[1.11,10,19],[2.45,3.4,2.9],[4.75,4,1.7],[1.66,3.8,5.25],[2.87,3.2,2.6],[4,4.2,1.8],[2.4,3.4,2.9],[1.5,4.75,6],[1.9,3.5,4.2],[1.53,4.33,5.75],[1.65,4,5.25],[2.05,3.5,3.6],[2.05,3.6,3.5],[13,7.5,1.18],[1.28,6.5,9],[2.15,3.4,3.4],[3,3.6,2.3],[2.3,3.4,3.1],[2.55,3.6,2.62],[1.53,4.2,6.5],[1.83,4,4],[8.5,5.25,1.33],[1.55,4,6.5],[1.36,5.75,7],[2.25,3.2,3.5],[3.1,3.3,2.3],[1.28,5.25,13],[2.8,3.25,2.6],[2.62,3.2,2.8],[1.36,5.25,7.5],[5.75,4.5,1.53],[2.05,3.5,3.6],[2.5,3.5,2.75],[1.4,5,7],[4.33,4,1.75],[2.15,3.6,3.2],[1.6,4.5,5],[1.9,3.6,4],[9,6,1.3],[3.2,4,2.05],[2.55,3.4,2.7],[2.3,3.8,2.8],[1.25,7,9.5],[1.25,6,12],[1.55,4.75,5],[10,6,1.25],[1.5,5,5.25],[2.4,3.8,2.62],[1.7,4.33,4.33],[2,4.33,3.1],[2.2,4,2.87],[1.4,5,7],[5,4.75,1.55],[1.44,4.33,7],[1.33,5,8.5],[11,6,1.25],[2,3.4,3.75],[2,3.4,3.75],[1.85,3.5,4.2],[2.25,3.25,3.2],[2,3.2,4],[5.25,3.4,1.72],[3.2,3.4,2.2],[4,3.75,1.85],[1.8,3.5,4.75],[1.2,7,13],[4.5,3.8,1.75],[3.1,3.4,2.3],[2,3.4,3.8],[2.3,3.2,3.25],[2.6,3.3,2.75],[2,3.5,3.75],[1.53,4.2,6],[9.5,5.75,1.25],[1.7,3.75,4.75],[3.1,3.2,2.4],[1.55,4.5,5.25],[2.87,3.2,2.62],[2.25,3.2,3.4],[2.1,3.4,3.5],[2,3.4,3.75],[1.85,3.6,4.2],[4.5,4,1.66],[1.6,4.2,5.25],[1.7,3.8,4.75],[4.33,3.6,1.83],[2.9,3.25,2.5],[1.72,3.75,4.75],[1.75,3.6,5],[2,3.3,4],[1.66,4,5],[17,8,1.14],[3.4,3.4,2.15],[1.25,6.5,10],[2,3.6,3.6],[2.55,3.5,2.7],[3.3,3.5,2.15],[2.6,3.4,2.7],[2.25,3.3,3.25],[1.65,3.75,5.75],[3.3,3.4,2.2],[1.53,4.5,5.75],[1.85,3.6,4.2],[2.55,3.2,2.87],[1.95,3.25,4.2],[2.62,3.5,2.62],[2.1,3.3,3.6],[1.8,3.75,4.33],[2.15,3.3,3.4],[2.45,3.5,2.8],[1.9,3.6,3.8],[1.3,5.75,9],[1.66,3.6,5.25],[1.53,4,6.5],[1.9,3.6,3.8],[2.05,3.5,3.4],[1.95,3.6,3.8],[3.75,3.25,2.05],[1.95,3.6,3.75],[3.3,3.5,2.15],[1.4,4.5,8.5],[11,7,1.22],[3.3,3.3,2.25],[2.8,3.2,2.62],[1.33,5.25,8.5],[1.18,8,12],[3.4,3.4,2.15],[2,3.5,3.75],[2.55,3.1,2.9],[2.75,3.2,2.7],[3.8,3.5,2],[1.72,3.75,5],[1.72,3.5,5],[2.4,3.6,2.8],[1.55,4.5,5.5],[5.5,4.5,1.55],[1.95,3.3,4.2],[2.4,3.5,2.8],[1.36,5,8],[1.75,3.5,5],[2.45,3.3,3],[4.33,4,1.75],[1.33,5.5,8],[3.3,3.3,2.25],[2.15,3.6,3.25],[4.33,3.6,1.85],[2.8,3.3,2.55],[2.3,3.2,3.3],[4.33,3.6,1.83],[2.05,3.4,3.6],[3.1,3.5,2.25],[1.5,4.33,6.5],[2.8,3.3,2.55],[2.2,3.5,3.2],[1.55,4.2,5.75],[2.5,3.4,2.7],[1.6,4.2,5.25],[2,3.5,3.8],[2.15,3.3,3.5],[1.8,3.6,4.5],[1.44,5,6],[5,4.5,1.57],[2.37,3.5,2.87],[1.33,5.25,8.5],[2.6,3.3,2.75],[1.66,4.2,4.75],[2.87,3.4,2.45],[2.55,3.2,2.9],[2.3,3.5,3],[1.95,3.5,4],[3.8,3.6,1.95],[4.5,3.9,1.75],[2.87,3.75,2.25],[1.6,4,5.5],[1.72,3.75,5],[8,5.75,1.33],[1.4,4.75,7.5],[2.4,3.4,2.9],[2.37,3.4,3],[4,3.6,1.9],[2.5,3.3,2.9],[1.53,4.5,5.5],[2.6,3.6,2.55],[2.1,3.4,3.5],[1.22,6.5,12],[1.5,4.33,6.5],[3.1,3.5,2.2],[1.9,3.25,4.5],[2.37,3.4,2.9],[2.05,3.2,4],[2.37,3.25,3.1],[3.25,3.6,2.15],[1.75,3.5,4.8],[1.66,3.8,5.25],[1.4,4.75,7.5],[8.5,5.5,1.33],[2.4,3.5,2.9],[4.33,4,1.72],[1.65,4.2,4.75],[2.45,3.1,3.1],[4.2,4.33,1.72],[1.53,4.33,6],[3.3,3.25,2.25],[2.05,3.4,3.6],[2.6,3.3,2.75],[1.7,3.8,4.75],[2.37,3.3,3],[2.8,3.4,2.5],[1.45,5,6.5],[3.25,3.25,2.3],[1.44,4.75,7],[2.05,3.4,3.75],[1.57,4.33,5.25],[1.44,4.5,7.5],[5,4.33,1.61],[4.2,3.75,1.85],[2.8,3.2,2.6],[1.4,4.75,8],[2.1,3.7,3.3],[2.4,3,3.3],[1.85,3.6,4.33],[4.75,4,1.66],[2.7,3.4,2.6],[2.05,3.5,3.5],[2.15,3.2,3.6],[2.3,3.6,2.9],[2.05,3.4,3.75],[2.45,3.2,3],[1.95,3.6,3.8],[2.2,3.5,3.2],[2.5,3.3,2.87],[1.44,5,6.5],[4.33,3.8,1.75],[7.5,5.25,1.4],[1.36,5.25,8],[1.66,3.6,5.75],[2.2,3.5,3.25],[2.2,3.3,3.4],[2.1,3.5,3.5],[2.6,3.25,2.8],[2.5,3.4,2.8],[5,4.33,1.57],[2.75,3.4,2.55],[2.87,3.5,2.4],[2.45,3.1,3.1],[4.75,4,1.7],[3.4,3.3,2.2],[3.6,4.2,1.83],[1.7,3.75,5],[4,3.5,1.95],[1.22,7.5,9.5],[1.4,5,7],[2.37,3.25,3.1],[1.45,4.5,6.5],[1.8,3.5,5],[2,3.5,3.6],[5.25,4,1.65],[2.3,3.4,3.1],[3.1,3.5,2.25],[1.53,4.2,6],[1.75,4,4.5],[1.36,5.25,8],[3.3,3.3,2.25],[2.5,3.6,2.7],[5,3.75,1.72],[2.05,3.1,4.2],[3.75,3.6,1.95],[3.8,3.8,1.85],[2.15,3.1,3.8],[3.8,3.5,2],[1.22,6.5,13],[2.15,3.5,3.3],[2.75,3.3,2.6],[1.5,4,7],[2.7,3.4,2.62],[1.95,3.6,3.75],[3.3,3.5,2.15],[1.55,4.2,6],[2.05,3.6,3.5],[1.75,3.75,4.5],[2,3.3,4],[1.5,4.2,7],[4.2,3.6,1.85],[1.55,4.33,5.75],[3.1,3.5,2.25],[1.9,3.75,3.75],[1.4,4.75,8],[3,3.3,2.3],[1.9,3.4,4],[2.25,3.4,3.25],[2.15,3.25,3.6],[1.45,4.75,6.5],[5,4,1.66],[1.53,4,6.5],[2.9,3.4,2.4],[6.5,4.33,1.5],[1.7,3.6,5.5],[2.3,3.25,3.2],[2.37,3.2,3.2],[1.36,4.5,9.5],[3,3.4,2.4],[4.75,4.2,1.66],[1.5,4.2,7.5],[4.33,3.8,1.75],[2.2,3.3,3.4],[1.14,8,19],[1.44,4.33,8],[2.9,3.1,2.6],[2,3.3,3.75],[1.9,3.5,4],[3,3.1,2.5],[4.5,3.75,1.75],[1.8,3.75,4.5],[4.33,3.8,1.8],[1.66,3.6,5],[4,3.8,1.85],[1.85,3.2,4.5],[2.25,3.3,3.3],[2.1,3.1,3.75],[3.6,3,2.2],[1.4,4.5,9.5],[1.7,3.5,5.25],[2.3,3.2,3.3],[1.66,3.75,5.5],[3,3.5,2.3],[2.9,3.2,2.5],[1.14,8.5,17],[2.3,2.9,3.6],[2.3,2.9,3.6],[3.6,3.4,2.05],[2.55,3,3],[2.05,3.6,3.4],[3.4,3.3,2.2],[1.9,3.5,4.2],[1.65,3.8,5.5],[3,2.8,2.75],[3.75,3.8,1.9],[2.2,3.2,3.5],[2.45,3.5,2.8],[3.4,3.3,2.2],[1.28,5,13],[4.33,3.6,1.83],[2.15,3.3,3.5],[3.1,3.4,2.3],[1.5,4.2,7],[2.1,3.4,3.5],[2.55,3.2,2.87],[6,4,1.57],[2,3.5,3.5],[3.5,3.4,2.1],[2.45,3.1,3.1],[1.4,4.75,8],[1.18,7.5,13],[2.15,3.1,3.8],[4.5,3.5,1.8],[8.5,5.5,1.33],[1.9,3.5,4.2],[3.3,3.2,2.3],[2.6,3.2,2.87],[1.33,5.25,9],[2.3,3.4,3.1],[2.5,3.3,2.87],[1.5,4.5,6.25],[2.1,3.5,3.6],[2.2,3.3,3.5],[2.05,3.4,3.75],[1.75,3.75,4.75],[2.8,3.1,2.7],[2.25,3.1,3.5],[1.95,3.4,4.2],[3.75,3.3,2.1],[1.28,6,9.5],[1.36,5.5,7.5],[2.3,3.25,3.1],[1.75,3.5,5],[1.83,3.5,4.33],[3.7,3.1,2.15],[2.3,3.25,3.3],[7.5,5.5,1.36],[4,4.33,1.75],[1.75,3.6,5],[1.61,4,5.5],[2.55,3.5,2.7],[1.33,5.5,8.5],[4.2,3.8,1.83],[1.3,6,8.5],[1.45,4.75,6.5],[2.3,3.3,3.2],[2.87,3.2,2.55],[1.75,3.75,4.75],[1.61,4,5.5],[2.25,3.3,3.3],[3.8,3.3,2.05],[3.75,3.8,1.9],[1.65,3.8,5.5],[1.33,5.5,8],[3.6,3.25,2.15],[2.3,3.4,3.1],[2.25,3.2,3.4],[1.4,4.75,8],[1.72,3.6,5],[3.75,3.6,1.95],[2.25,3.5,3],[3.75,3.6,1.95],[5,3.8,1.7],[7,5,1.4],[2.1,3.5,3.4],[1.9,3.8,3.8],[3.3,3.3,2.25],[3.8,3.8,1.85],[1.16,7,17],[1.57,4,5.75],[4.75,4,1.66],[2.4,3.6,2.8],[1.44,5.25,5.75],[1.9,3.8,3.75],[1.25,6.5,10],[7.5,5.5,1.36],[1.72,4,4.5],[2,3.6,3.6],[1.72,4,4.5],[1.45,4.75,6.5],[3.4,3.6,2.1],[2,3.75,3.5],[1.9,4,3.5],[4,4,1.8],[3.3,4,2],[4.33,3.75,1.8],[2.15,3.5,3.4],[2.05,3.6,3.6],[2.6,3.5,2.62],[1.2,8.5,10],[4,3.75,1.85],[4.2,3.6,1.85],[11,6,1.25],[3.75,3.5,2],[2.25,3.4,3.2],[1.66,3.8,5.25],[1.33,5.5,8.5],[5.5,4,1.61],[2,3.75,3.5],[1.6,4.2,5.25],[8,5,1.36],[1.8,3.5,4.75],[1.53,4.33,5.75],[2.45,3.2,3],[1.06,13,29],[2.25,3.5,3.1],[2.3,3.3,3.2],[3.75,3.5,2],[4.2,3.6,1.85],[2.25,3.4,3.2],[1.18,6.75,16],[1.4,4.75,7.5],[2.5,3.25,2.9],[1.9,3.6,4],[2.45,3.4,2.9],[1.83,4,4],[8,4.75,1.4],[5.75,4.5,1.53],[2.3,3.4,3.1],[7.5,5,1.36],[5.25,4.33,1.6],[4.2,4,1.8],[2,3.5,3.75],[1.9,3.8,3.8],[1.4,5,7],[1.1,10,26],[1.18,7.5,13],[1.3,5.75,9],[2.3,3.4,3.1],[2.7,3.3,2.7],[7,4.6,1.44],[2.05,3.4,3.6],[3.1,3.3,2.3],[5.25,4,1.61],[2.15,3.5,3.3],[1.45,4.5,6],[3.5,3.3,2.15],[1.06,13,29],[3.6,3.8,1.95],[1.33,5.25,9],[3.4,3.75,2.05],[7,4.75,1.4],[2.1,3.5,3.4],[1.55,4.5,5.5],[2,3.5,3.75],[1.95,3.5,3.8],[1.5,4.5,6.5],[2.2,3.4,3.25],[8,5.5,1.33],[1.83,3.5,4.5],[2.5,3.5,2.7],[2.1,3.5,3.5],[2.75,3.3,2.62],[9.5,5,1.33],[1.44,4.4,7.5],[1.45,4.5,7],[4.2,3.8,1.8],[2.9,3.25,2.5],[2.05,3.75,3.3],[3.3,3.4,2.2],[4.2,3.6,1.85],[3,3.4,2.37],[1.33,5.25,8.5],[2.15,3.4,3.4],[1.95,3.5,4.2],[1.33,5.75,7.5],[2.35,3.4,3],[1.75,4,4.33],[3.6,3.4,2.05],[1.4,4.5,8],[1.11,10,17],[1.83,3.8,4.2],[2.8,3.4,2.5],[2.05,3.5,3.6],[1.72,3.8,4.75],[2.5,3.6,2.62],[3.6,3.5,2.05],[3.3,3.4,2.2],[3.1,3.4,2.3],[2.3,3.4,3.1],[1.85,3.75,4],[1.7,3.75,5],[1.5,4.5,6.5],[4.33,3.75,1.8],[6,4.2,1.55],[1.95,3.8,3.5],[2.9,3.4,2.4],[3.6,4,1.9],[1.4,4.75,7],[2.25,3.1,3.4],[2.62,3.3,2.62],[4.75,3.8,1.72],[1.4,5,7],[1.6,3.8,5.75],[2.45,3.5,2.75],[2.9,3.3,2.5],[2.25,3.6,3],[11,6,1.25],[2.6,3.2,2.87],[1.2,7,13],[2.05,3.5,3.5],[2.1,3.5,3.5],[2.05,3.5,3.6],[6,4,1.57],[2.25,3.25,3.25],[2.05,3.5,3.5],[1.55,4,6],[10,6.5,1.25],[5,3.8,1.7],[2.2,3.4,3.3],[3,3.3,2.4],[1.9,3.6,4],[1.8,3.75,4.5],[2.37,3.4,3],[1.3,6,9],[1.2,7,12],[1.66,4,4.8],[1.72,3.8,4.75],[1.11,9.5,19],[2.75,3.3,2.6],[3.3,3.3,2.25],[2.4,3.3,3],[2.55,3.4,2.7],[3.3,3.8,2.1],[4,3.6,1.9],[1.9,3.4,4.2],[3.3,3.6,2.1],[1.14,8,17],[2.8,3.25,2.6],[1.25,6.5,11],[3.1,3.1,2.45],[1.65,4.2,4.75],[2.05,3.4,3.75],[2.35,3.4,3],[6,4.2,1.55],[1.83,3.75,4.2],[3.8,3.8,1.9],[4,3.6,1.91],[2.05,3.6,3.5],[2.3,3.25,3.2],[3.25,3.5,2.2],[3.3,3.5,2.15],[4.75,4,1.7],[1.5,4.33,6.5],[1.3,5.5,10],[1.29,5.5,11],[9.5,6,1.29],[2,3.6,3.6],[1.29,6,9.5],[4,3.6,1.91],[2.8,3.3,2.5],[1.95,3.6,3.75],[1.13,9,19],[1.45,4.5,7],[3.4,3.5,2.1],[1.67,4,5],[5,3.8,1.7],[5.5,4.33,1.55],[1.8,3.8,4.33],[3.5,3.5,2.1],[2.2,3.6,3.1],[1.29,5.5,11],[2,3.5,3.8],[2.6,3.5,2.6],[1.95,3.6,4],[3.4,3.5,2.15],[5,4,1.67],[3.3,3.5,2.15],[1.91,3.6,4],[4.2,3.6,1.85],[3.4,3.6,2.1],[2.25,3.25,3.3],[2.7,3.3,2.63],[2.63,3.3,2.7],[1.65,4,5.25],[1.62,4,5.25],[1.5,4.33,6.5],[3.1,3.6,2.2],[4.5,3.6,1.8],[1.36,5,8.5],[1.85,3.75,4],[2.75,3.1,2.75],[3.6,3.5,2.05],[2.88,3.25,2.55],[1.8,3.75,4.75],[4.4,3.5,1.85],[2.38,3.6,2.88],[1.2,8,11],[1.8,3.8,4.2],[3.3,3.6,2.1],[1.62,4,5.25],[8.5,4.5,1.4],[1.95,3.6,3.8],[1.85,3.6,4.2],[1.33,5.25,8.5],[1.4,4.75,8],[4,3.8,1.85],[1.6,3.8,6],[2.63,3.3,2.7],[4.33,4.2,1.73],[1.45,5,6],[3.3,3.3,2.25],[1.44,4.75,7],[3.8,3.5,2],[1.91,3.5,4.33],[3.4,3.6,2.1],[2.9,3.2,2.55],[6.5,4,1.53],[3.75,3.8,1.91],[1.25,6.5,11],[1.5,4.33,6.5],[2.9,3.5,2.35],[4.5,3.6,1.5],[1.83,3.5,4.5],[1.65,3.8,5.5],[1.4,4.75,8.5],[2.4,3.3,3],[8.5,5.5,1.3],[1.67,3.6,6],[2.5,3.5,2.7],[1.62,4.33,5.25],[1.75,3.6,4.75],[2.5,3.2,3],[2.5,3.2,3],[1.95,3.5,4],[4.75,4,1.7],[1.75,3.6,5],[10,5.75,1.29],[4.75,3.8,1.73],[2.55,3.25,2.9],[1.36,4.75,10],[1.5,4.75,6],[1.45,4.5,7],[1.22,7,12],[2.05,3.3,3.8],[1.8,3.6,4.5],[1.62,4,5.5],[3.3,3.4,2.2],[2.75,3.3,2.6],[2.7,3,2.88],[2.38,3.6,2.88],[1.95,3.6,3.75],[7.5,5,1.4],[2.7,3.25,2.7],[3.75,3.6,1.95],[3.75,3.5,1.95],[1.44,4.75,7],[9,4.75,1.36],[6,4,1.57],[1.36,5,9],[2.2,3.3,3.4],[1.65,3.75,5.5],[1.44,4.2,8],[2.88,3.25,2.5],[5.5,3.8,1.62],[1.7,3.8,5],[1.91,3.6,3.75],[4.75,3.6,1.75],[2.25,3.2,3.3],[1.5,4.2,7.5],[1.25,5.5,15],[1.62,4.2,5],[1.29,6,9],[2.55,3.3,2.8],[1.67,4,5],[2.5,3.25,2.9],[3,3.1,2.55],[1.67,3.8,5.25],[1.73,3.6,5],[2.4,3.4,2.9],[3.4,3.3,2.2],[6,4.2,1.53],[1.7,3.75,5],[2.55,3.3,2.75],[2.2,3.4,3.25],[1.65,4,5],[3.6,3.25,2.15],[1.5,4.33,6.5],[1.6,4.2,5.25],[3.6,3.4,2.05],[2.8,3.25,2.63],[1.83,3.75,4.2],[2.55,3.5,2.7],[4.2,3.5,1.91],[11,6,1.25],[2.1,3.4,3.6],[2.88,3.6,2.38],[3.6,3.4,2.05],[2.63,3.4,2.63],[2.05,3.4,3.7],[2.8,3.1,2.7],[1.45,4.5,7],[2.45,3.1,3],[1.14,8.5,15],[6,4.2,1.55],[5.5,4,1.62],[4.2,4.2,1.73],[1.2,7,13],[2.3,3.4,3.1],[2.5,3.25,2.88],[2.05,3.2,3.75],[2.38,3.3,3],[1.17,7.5,17],[2.88,3.2,2.55],[1.83,3.75,4.2],[2.45,3.2,3],[1.75,4,4.2],[2.3,3.5,3],[6,4.2,1.53],[1.7,4,4.75],[3.9,3.9,1.85],[1.55,4.5,5.25],[4.75,3.6,1.73],[2.25,3.4,3.2],[2.8,3.6,2.4],[2.63,3.25,2.75],[1.65,3.8,5.5],[1.5,4.33,6.5],[2.55,3.5,2.7],[12,6,1.25],[1.73,3.9,4.6],[1.3,5.25,10],[1.53,4.5,5.75],[2,3.5,3.75],[1.6,4,5.5],[1.25,5.75,11],[1.2,7,13],[1.95,3.5,3.75],[3.3,3.5,2.15],[1.17,8.5,15],[1.8,3.8,4.2],[2.88,3.3,2.5],[1.44,5,6],[2.45,3.75,2.63],[3.4,3.75,2.05],[2.63,3.5,2.6],[1.33,5.25,9],[2.1,3.6,3.4],[4.33,4.2,1.7],[2.25,3.6,2.9],[1.5,4.5,6],[1.83,3.6,4.2],[1.36,5,7.5],[2.75,3.3,2.5],[2,3.5,3.6],[9,4.75,1.36],[1.73,4.2,4.2],[5.25,4.33,1.57],[2,3.8,3.5],[1.83,3.9,4],[6,4.75,1.5],[2.45,3.4,2.9],[1.45,5,6.25],[2.75,3.3,2.6],[5.25,4.33,1.57],[2.4,3.5,2.88],[1.22,7,11],[1.25,6,11],[1.36,5.5,7],[4,4.33,1.75],[1.6,4.33,5],[1.36,5.25,8],[2,3.6,3.5],[3.8,4,1.83],[2.9,3.5,2.38],[1.67,4,5],[1.5,4.5,6.5],[2.75,3.8,2.3],[1.91,3.8,3.6],[1.5,4.33,6],[6.5,4.75,1.44],[3.2,3.1,2.4],[1.8,3.75,4.75],[3.9,3.6,1.9],[1.22,7,12],[3.6,3.2,2.2],[1.85,3.4,4.5],[7.5,5,1.4],[1.6,3.75,6.5],[5,3.1,1.9],[1.44,4.5,7],[2.45,3.1,3.1],[1.5,4.2,6.5],[1.9,3.25,4.5],[3.1,3.2,2.4],[4.5,4.2,1.66],[1.8,3.75,4.5],[1.85,3.5,4.33],[3.3,3.6,2.1],[2.5,3.2,3],[2.8,2.9,2.9],[2.8,3.1,2.75],[1.8,3.6,4.75],[3.6,3.2,2.15],[2.05,3.25,4],[3.6,3.25,2.15],[4.33,3.4,1.85],[1.14,8.5,15],[6.5,4.75,1.45],[3.6,3.2,2.15],[4,3.3,2],[1.66,3.6,5.5],[2.15,3.2,3.6],[1.4,5.25,6.5],[2.9,3.2,2.55],[4.5,3.6,1.8],[2,3.1,4.33],[1.53,4,6.5],[1.33,5,10],[1.9,3.2,4.5],[2.3,3.3,3.1],[2.25,3.25,3.4],[2.62,3.1,2.87],[2.87,3.25,2.5],[13,6.5,1.22],[1.61,3.8,6],[1.25,6,11],[4,3.6,1.9],[3.75,3,2.15],[2.8,3.4,2.5],[2.6,3.25,2.75],[2,3.25,4],[2,3.3,4],[1.08,11,26],[2.3,3.2,3.3],[1.53,4,6.5],[1.8,3.4,5],[1.7,3.8,5],[1.75,3.6,5],[1.7,3.6,5],[3.1,3.4,2.3],[1.33,5,9.5],[6,4,1.57],[2.3,3,3.5],[3,3.2,2.5],[9,5,1.36],[2.62,3.3,2.7],[2.45,3.4,2.87],[3.25,3.2,2.3],[1.3,5.5,9.5],[1.72,3.6,5.25],[2.4,3.2,3.1],[2.9,3.3,2.55],[1.45,4.33,7.5],[3,3.3,2.4],[6.5,4.5,1.5],[2.8,3.4,2.4],[2.87,3.2,2.55],[2.5,3.4,2.75],[1.28,6,9],[3,3.1,2.5],[2.05,3.2,3.8],[1.9,3.3,4.5],[1.4,4.75,7.5],[2.9,3,2.7],[2.45,3.2,3],[2.6,3.2,2.8],[2.2,3.6,3.1],[2.2,3.3,3.5],[1.57,4.1,5.75],[1.57,4.2,6],[2.25,3.4,3.2],[4.75,3.3,1.83],[1.55,3.75,7],[4,3.3,2],[2.9,3.3,2.45],[1.55,4,6.5],[8.5,5.75,1.3],[2.6,3.25,2.8],[2.05,3.6,3.5],[1.5,4.5,6],[1.72,3.5,5.25],[3.6,3.4,2.05],[1.75,3.5,5],[1.36,4.75,8.5],[1.66,3.75,5.25],[3.2,3.3,2.3],[2.55,3.2,2.9],[1.36,4.75,9],[1.55,4.5,5.5],[1.75,3.5,5],[2.25,3.1,3.4],[3.3,3.3,2.25],[7,3.6,1.6],[2,3.3,4],[5,4.33,1.57],[1.9,3.4,4.33],[1.2,6.5,13],[2.2,3.3,3.4],[2,3.5,3.8],[2.7,3,2.87],[3.75,3.5,2],[2.2,3.1,3.75],[1.83,3.6,4.33],[2.1,3.3,3.75],[1.08,10,26],[1.44,4.5,8],[1.95,3.4,4],[1.57,4,5.75],[2.2,3.2,3.6],[4.75,4.2,1.65],[3.25,3.3,2.2],[1.4,4.5,7.5],[5.75,4.2,1.53],[2.15,3.3,3.5],[2.6,3.2,2.8],[3.2,3.2,2.37],[3.8,3.1,2.1],[2.2,3.2,3.5],[2.1,3.4,3.6],[1.14,8.5,15],[2.3,3.2,3.3],[2.88,3.3,2.5],[1.29,5.5,10],[2.75,2.75,3.1],[2.38,3.1,3.25],[2.2,3.3,3.4],[6.5,4.75,1.45],[1.25,6.5,10],[1.85,3.3,4.75],[1.95,3.4,4.2],[4,3.25,1.95],[1.57,4,5.75],[3.25,3.8,2.05],[1.95,3.3,4.2],[2.25,3.4,3.2],[4.2,3.3,1.95],[2.3,3.3,3.2],[1.75,3.4,5.25],[3.1,3.4,2.3],[1.67,3.6,5.75],[2.88,3.3,2.5],[2.75,3.25,2.63],[2.38,3.4,3],[2,3.1,4.33],[2.4,3.2,3.1],[2.5,3,3.1],[5,3.75,1.7],[1.91,3.4,4.33],[2.8,2.75,3],[3.1,3.2,2.38],[2.7,3.2,2.7],[1.4,4.75,8.5],[1.7,3.75,5],[1.73,3.8,4.5],[3.5,3.25,2.15],[1.18,8,15],[2.9,3.4,2.38],[1.6,4.2,5.25],[2.38,3.1,3.2],[2.88,2.8,2.9],[5,4.33,1.57],[1.53,4,7],[3.2,2.88,2.63],[3.25,3.1,2.4],[3.6,3.1,2.2],[2.88,3,2.7],[1.67,3.8,5],[1.67,3.8,5.25],[5,3.8,1.67],[1.44,4.75,6.5],[1.36,4.5,9.5],[2.55,3,3],[5,3.8,1.67],[1.4,4.33,9],[2.2,3.2,3.5],[5,3.5,1.73],[2.2,3.2,3.5],[1.44,4.33,7.5],[1.33,5.25,8.5],[1.73,3.6,5],[3,3.2,2.45],[2.8,3.4,2.5],[1.91,3.2,4.5],[3,3.2,2.45],[2.8,2.9,2.88],[3.6,3.1,2.2],[2.75,3.1,2.7],[3.75,4,1.85],[3.5,3,2.3],[1.18,7.5,15],[1.8,3.75,4.33],[1.8,3.3,5.25],[1.6,3.75,6.5],[3.2,3,2.45],[4.33,3.6,1.8],[2.9,3.1,2.63],[2.5,3.1,3],[2,3.3,4],[1.18,7,13],[2.75,3,2.8],[3.5,3.3,2.1],[2.5,2.9,3.2],[2.9,3,2.7],[1.8,3.5,5],[3.1,3.1,2.5],[1.67,3.8,5.25],[1.7,3.75,5.25],[7,4.75,1.44],[1.85,3.25,4.5],[1.67,3.6,5.75],[1.5,3.9,7.5],[2.75,3,2.8],[3.5,3.6,2.05],[1.7,3.4,5.75],[1.67,3.6,5.25],[2.5,3.2,2.88],[1.53,4.5,5.75],[2.9,3.1,2.6],[4.75,3.75,1.73],[2.8,3,2.8],[2.5,2.88,3.3],[1.25,6.5,9.5],[2.7,3.3,2.7],[2.1,3.2,4],[2.1,3.2,3.8],[3.5,2.9,2.38],[1.73,3.6,5.25],[1.95,3.6,3.8],[3.5,3.3,2.15],[3.75,3.4,2.05],[4.2,3.6,1.83],[2,3.5,3.6],[2,3.4,3.8],[2.75,3.25,2.55],[1.55,4.2,5.75],[1.8,3.2,5.25],[3,3.1,2.45],[1.4,4.75,8.5],[2.9,3.1,2.5],[2.15,3.5,3.25],[2.2,2.9,3.9],[1.91,3.3,4.33],[1.57,3.8,6.5],[3.4,3.1,2.3],[9.5,5,1.33],[1.55,4,6],[1.2,7.5,11],[2.4,3.1,3.2],[1.53,4,6.5],[2.05,3.2,3.8],[2.1,3.4,3.5],[1.73,3.6,5],[3.5,3.2,2.2],[1.7,3.3,6],[1.53,4.33,5.75],[2.5,2.9,3.2],[1.62,3.75,5.75],[3,3.3,2.4],[4.33,3.5,1.85],[1.3,5.5,10],[2.2,3.1,3.6],[1.44,4.75,6.5],[2.25,3.1,3.5],[1.83,3.5,4.5],[5.75,4.2,1.55],[1.53,4.33,6],[6,3.8,1.6],[1.22,7,11],[2.2,3.2,3.6],[1.8,3.3,5.25],[2.05,3.25,3.8],[2.55,3.2,2.88],[3.8,3.75,1.85],[1.67,3.5,6],[2.5,3.4,2.8],[1.36,5,9],[4.33,3.5,1.85],[1.95,3.3,4.2],[2.3,2.88,3.75],[2.75,3.4,2.55],[2.3,3.1,3.4],[5.25,4.33,1.57],[2.75,3.25,2.63],[1.4,4.33,8.5],[1.91,3.3,4.5],[1.3,5.25,10],[4.75,3.75,1.73],[1.75,3.75,4.75],[1.57,4,6],[1.75,3.6,4.5],[3.75,3,2.2],[4.75,3.5,1.8],[1.14,8.5,15],[1.33,5,9],[3.1,3.1,2.45],[1.8,3.6,4.5],[2.38,3,3.3],[5.5,3.8,1.65],[3.6,3,2.25],[1.95,3.5,3.8],[1.62,4.33,5],[1.14,7.5,19],[2.55,3.4,2.8],[2.75,3.3,2.55],[1.29,5.5,12],[2.55,3,3.1],[2.1,3.2,3.75],[1.83,3.6,4.2],[1.7,4,4.75],[1.73,3.8,4.75],[2.15,2.9,4],[1.62,4,5.5],[2.05,3.5,3.6],[2.1,3.5,3.4],[1.55,4,6.5],[2.2,3.3,3.4],[8,5,1.36],[2.25,3.5,3.1],[5.25,4,1.65],[1.91,3.5,4],[2.2,3.4,3.3],[2.8,3.75,2.3],[1.62,3.8,5.5],[2.25,3.25,3.3],[1.5,4,7],[1.8,3.75,4.33],[2.15,3.4,3.4],[1.36,4.75,8],[3.2,3.5,2.2],[2.3,3.3,3.1],[2,3.5,3.75],[1.36,5,8],[3.6,3.8,1.91],[4,3.75,1.91],[1.62,4,5.25],[1.44,4.5,7],[2,3.2,4.2],[2.88,3.5,2.38],[3.3,3,2.4],[3,3.25,2.45],[2.88,3.5,2.4],[2.25,3.4,3.1],[1.3,5,11],[2,3.5,3.6],[1.33,5,9.5],[2.6,3.1,2.75],[2.2,3.1,3.5],[1.95,3.6,3.6],[2,3.75,3.4],[3,3.6,2.2],[3,3.3,2.38],[2.05,3.6,3.4],[1.91,3.75,3.75],[1.73,3.9,4.6],[2.7,3.5,2.5],[2.63,3.6,2.5],[2.6,3.8,2.5],[2.63,3.4,2.63],[2.75,3.8,2.38],[2.2,3.3,3.4],[1.44,4.75,7],[4.33,3.9,1.75],[10,5.75,1.28],[2.6,3.3,2.75],[1.36,5,8.5],[1.57,4.33,5.75],[6.5,4.75,1.44],[2.45,3.3,2.9],[3.5,3.5,2.05],[1.44,4.75,7],[3,3.5,2.3],[1.75,3.8,4.5],[1.16,8,15],[1.75,4,4.2],[3.75,3.8,1.9],[1.33,5.5,8],[2.75,3.5,2.5],[2.15,3.5,3.3],[1.25,6.5,11],[5.75,4,1.6],[3.1,3.4,2.3],[4,3.8,1.83],[3.2,3.4,2.25],[2.3,3.3,3.1],[1.33,5.5,8.5],[3,3.6,2.25],[2.45,3.2,3],[4.2,4,1.75],[3.25,3.6,2.15],[2.3,3.5,3],[5.25,4.33,1.57],[1.14,8,21],[1.3,5.5,10],[2.62,3.3,2.7],[4.2,3.6,1.85],[2.7,3.5,2.5],[1.28,5.75,12],[1.25,6.25,11],[1.72,3.75,5.25],[1.85,3.6,4.33],[3,3.25,2.4],[2.8,3.25,2.6],[2.9,3.5,2.37],[3,3.5,2.25],[3,3.3,2.37],[2.05,3.6,3.6],[4.2,3.75,1.85],[5.75,4.2,1.57],[2.25,3.4,3.2],[1.7,3.75,5.25],[1.25,6,11],[1.45,4.75,7],[6,4.5,1.5],[1.3,5.5,9.5],[2.9,3.4,2.45],[2.25,3.4,3.2],[2.7,3.5,2.55],[1.57,4.2,5.5],[1.4,4.5,8.5],[5,3.8,1.7],[2.25,3.3,3.3],[2.1,3.5,3.4],[2.7,3.25,2.7],[1.8,3.75,4.5],[3.8,3.6,1.95],[4.33,3.75,1.8],[1.75,3.8,4.5],[4.5,3.6,1.8],[2.05,3.5,3.5],[2.15,3.5,3.3],[1.6,4,5.75],[2,3.5,3.75],[5.5,4,1.6],[1.4,5,7.5],[2.05,3.4,3.75],[2.25,3.4,3.2],[2,3.75,3.5],[1.95,3.5,4],[1.5,4.33,6.5],[3.25,3.4,2.2],[4.33,4.2,1.7],[2.05,3.4,3.6],[2.05,3.5,3.6],[1.72,3.6,5],[1.9,3.6,4],[2.4,3.4,2.87],[2.5,3.4,2.75],[7,4.5,1.45],[1.33,5.25,8.5],[2.4,3.5,2.8],[2.55,3.3,2.8],[3,3.1,2.5],[1.65,4,5],[1.3,5.75,9],[2.2,3.5,3.25],[2.45,3.2,3.1],[1.25,6,11],[6,4,1.57],[4.75,3.75,1.72],[3.75,3.4,2.05],[1.4,5,7],[2,3.5,3.8],[1.4,5,7.5],[3.6,3.5,2.05],[2,3.3,4],[2.15,3.2,3.75],[1.95,3.5,4],[2.87,3.5,2.4],[2.4,3.3,3],[1.95,3.5,4],[1.28,6,8.5],[4.33,3.3,1.9],[1.25,6,12],[4.33,3.8,1.8],[4,3.8,1.85],[4,3.6,1.9],[1.5,4.5,6.5],[3.75,3.3,2.1],[4.33,3.6,1.83],[2.2,3.3,3.4],[1.61,3.9,5.5],[2.8,3.4,2.45],[2.15,3.6,3.3],[3.3,3.6,2.15],[1.22,6,13],[3,3.1,2.5],[2.2,3.4,3.3],[4.2,3.4,1.9],[2,3.5,3.8],[3.1,3.4,2.37],[1.25,6.5,9.5],[4,3.5,1.9],[6,4.2,1.55],[4.75,3.5,1.8],[3.4,3.6,2.1],[1.53,4.2,6.25],[1.28,5.75,10],[1.61,3.8,5.75],[5,3.8,1.66],[1.61,4.2,5],[2.5,3.4,2.8],[1.5,4.75,5.75],[2.62,3,3],[2.3,3.5,3],[3.1,3.75,2.2],[2.15,3.25,3.6],[1.9,3.4,4.33],[2.1,3.4,3.6],[1.7,3.8,5],[1.95,3.5,4],[7,4.33,1.45],[1.73,3.75,4.75],[4.75,3.8,1.67],[1.83,3.4,4.5],[3.6,3.3,2.05],[1.6,3.8,5.5],[4.75,3.8,1.67],[1.7,3.8,4.75],[2.25,3.4,3.1],[1.6,4.2,5.75],[1.7,3.8,5],[1.75,3.8,4.5],[5.75,4.33,1.55],[3.7,3.2,2.15],[1.53,4.2,6],[2.6,3.1,2.9],[8,4.75,1.4],[1.83,3.6,4.33],[2.05,3.3,3.8],[3.4,3.4,2.15],[1.91,3.5,4],[2.8,3.3,2.55],[5.75,3.8,1.62],[1.3,5.5,9.5],[3.2,3.5,2.2],[1.62,3.8,5.5],[1.91,3.4,4.2],[1.4,5,7],[1.95,3.5,4],[2.2,3.2,3.5],[2.38,3.1,3.2],[9.5,5.75,1.29],[2.1,3.3,3.6],[3.6,3.25,2.15],[2.2,3.4,3.3],[4.75,3.5,1.83],[2.1,3.4,3.5],[1.91,3.4,4.33],[1.29,6,9.5],[3.2,3.4,2.25],[1.85,3.4,4.5],[1.8,3.4,4.75],[3.25,3.1,2.4],[6.5,4.33,1.5],[1.33,5.25,9],[1.5,4.5,6.5],[1.55,4,6.5],[2.1,3.4,3.6],[1.73,3.6,5.25],[1.8,3.75,4.33],[2.63,3.1,2.8],[1.5,4.2,6.5],[3.75,3.6,1.91],[8,5.25,1.36],[2.25,3.25,3.3],[1.83,3.5,4.5],[1.95,3.5,4],[3.6,3.6,2],[1.8,3.5,4.75],[7,4.2,1.5],[1.8,3.5,4.75],[2,3.5,3.75],[4.33,3.25,1.95],[2.38,3.4,3],[2,3.6,3.6],[2.2,3.2,3.5],[1.83,3.5,4.5],[1.18,7.5,13],[1.85,3.4,4.5],[7,4.5,1.44],[5,4,1.6],[3.25,3.1,2.38],[3.75,3.3,2.1],[1.53,4.2,6],[1.5,4,7],[1.6,4,5.75],[5.5,3.75,1.7],[6,3.75,1.62],[1.65,3.6,5.75],[1.65,3.8,5.25],[7,4.75,1.44],[2.45,3.25,2.9],[5.5,3.75,1.7],[3.6,3.3,2.05],[1.62,3.8,5.75],[2.15,3.4,3.4],[3.25,3.25,2.25],[1.44,4.33,8],[5.25,3.4,1.75],[1.73,3.4,5.5],[1.65,3.8,5.25],[2.1,3.25,3.8],[1.62,4,5.5],[2.8,3.3,2.55],[2.7,3.1,2.8],[2.3,3.25,3.2],[1.36,4.75,9.5],[2.7,3,2.88],[1.8,3.6,4.5],[2.4,2.9,3.4],[8,4.6,1.4],[3,3.25,2.4],[1.67,4,5],[3.1,3.1,2.38],[3,3,2.63],[4.33,3.6,1.85],[2.5,3.2,2.9],[1.67,3.6,5.5],[1.33,4.75,10],[1.25,6,11],[1.7,3.75,4.5],[1.4,4.5,7.5],[1.8,3.5,4.5],[3.4,3.25,2.2],[3.5,3.4,2.15],[2.88,3.1,2.45],[1.6,3.75,5.75],[4.33,3.6,1.75],[2.75,3,2.75],[1.91,3.4,4],[5.5,3.8,1.67],[1.75,3.8,4.5],[1.4,4.2,9],[2.2,3.3,3.4],[3.8,3.3,2.05],[2.3,3.3,3.2],[1.44,4.2,9],[1.73,3.6,5],[2.45,3.1,3.1],[2.4,3.3,3],[7.5,4.5,1.45],[5.75,3.6,1.65],[1.36,4.75,9],[2,3.5,3.8],[1.4,4.5,8.5],[1.65,3.8,5.5],[2.38,3.25,3.2],[3.4,3,2.38],[2.63,3.3,2.7],[2.75,2.9,2.9],[2.45,3.3,2.88],[5.25,3.6,1.7],[3.1,3.1,2.45],[1.53,4,6.5],[1.44,4.5,7.5],[1.95,3.2,4.33],[1.73,3.5,5.25],[3.8,3.5,2],[1.85,3.4,4.5],[2.4,3.4,2.9],[2.75,3,2.8],[3.1,3.5,2.25],[1.83,3.4,4.75],[2.55,3.2,2.88],[6.5,4.2,1.53],[3.7,3.4,2.05],[1.7,3.8,5],[1.5,4.2,7],[2.88,3.1,2.6],[2.3,3.25,3.2],[2.45,3,3.2],[2.8,3.3,2.55],[2.75,3,2.75],[2.88,3.3,2.45],[1.8,3.6,4.5],[3,3.3,2.45],[1.22,6.5,12],[1.75,3.8,4.5],[1.33,5.25,9],[3.4,3.3,2.2],[1.36,5,8],[1.6,3.8,6],[4.75,3.75,1.73],[4.2,3.4,1.91],[1.67,4,5],[1.33,5,9.5],[3.75,3.1,2.15],[5.5,3.75,1.67],[2.9,3.2,2.55],[4.75,3.6,1.75],[1.95,3.4,4],[3.1,3.1,2.45],[2.35,3.4,3],[2.3,3.4,3.1],[2,3.3,4],[1.8,3.8,4.33],[2.2,3,3.75],[2.2,3.1,3.6],[1.5,4.33,6.5],[2.3,3.5,3],[1.7,3.5,5.5],[4.75,4.2,1.65],[4.2,3.5,1.91],[1.4,5,7],[2.4,3.1,3.2],[1.95,3.6,3.8],[4.75,3.75,1.73],[3.1,3.1,2.45],[1.36,4.75,9],[3.2,3.3,2.3],[2.15,3.6,3.2],[2.88,3.4,2.4],[1.53,4.2,6],[1.17,7.5,17],[2.2,3.1,3.6],[1.95,3.4,4.2],[2.9,3.3,2.45],[3.8,3.4,2],[1.45,4.2,7.5],[5.5,3.75,1.65],[3.8,4.1,1.83],[2.7,3.5,2.55],[2.38,3.25,3.1],[2.05,3.5,3.6],[1.83,3.8,4],[1.7,3.8,5],[3.4,3.3,2.2],[2.45,3.3,2.9],[1.22,6.5,12],[2.3,3.4,3.1],[2.6,3.75,2.5],[2.3,3.5,3],[2.6,3.6,2.5],[3.25,3.75,2.1],[1.18,7,13],[1.57,4.5,5],[2.75,3.5,2.45],[1.73,4,4.5],[1.95,3.6,3.8],[3.8,3.5,1.95],[6,5,1.5],[3.3,3.5,2.15],[3.2,3.4,2.2],[2.05,4.2,3],[1.72,3.75,4.5],[1.85,3.8,3.8],[2,4.2,3.2],[4.5,3.8,1.75],[1.7,4,4.5],[3,3.75,2.2],[3,3.5,2.3],[1.57,4.5,5.25],[1.3,5.75,9.5],[1.44,4.75,7],[2.25,3.6,3],[3.1,3.8,2.15],[2.2,3.25,3.4],[1.12,9.5,17],[1.5,4.5,6],[3.5,3.5,2.1],[1.36,5.25,7.5],[1.66,4.33,4.5],[2.62,3.6,2.55],[1.83,3.8,4.2],[3.6,3.5,2.05],[1.95,3.75,3.6],[13,8,1.18],[1.5,4.5,6],[4.5,4.33,1.66],[1.45,4.5,7],[2.75,3.75,2.37],[1.45,4.75,6],[3.1,3.4,2.3],[1.18,8,12],[2.05,3.75,3.4],[2.45,3.5,2.8],[1.61,4.5,4.75],[2.9,3.6,2.3],[1.9,3.75,3.8],[1.75,4,4.33],[7,5.25,1.36],[2.05,3.4,3.75],[3.5,3.75,2],[2.45,3.3,2.87],[2.2,3.8,3],[1.53,4.5,5.5],[1.14,8,17],[2,3.6,3.6],[3.6,4,1.9],[2.25,3.75,2.9],[2.3,3.9,2.75],[2,3.8,3.5],[2.37,3.4,2.9],[2,3.6,3.5],[1.72,4,4.33],[17,8,1.16],[1.36,5,8],[1.61,4.33,5],[2.25,3.5,3.1],[3,3.6,2.25],[1.95,3.5,3.8],[3.1,3.6,2.2],[2.15,3.6,3.2],[1.36,6,7],[2.25,3.4,3.2],[3.1,4,2.05],[2.1,3.6,3.4],[1.22,6.5,12],[2.4,3.4,2.9],[2.5,3.9,2.5],[2.75,3.75,2.37],[1.95,3.8,3.6],[1.95,3.8,3.5],[2.9,3.4,2.4],[3.75,3.8,1.9],[1.45,4.5,7],[3,3.6,2.3],[4.33,4.75,1.65],[1.95,3.75,3.6],[3,3.5,2.3],[2.55,3.1,2.9],[3.6,3.8,1.95],[2.75,3.6,2.45],[1.65,4,5.25],[2.37,3.6,2.87],[2.62,3.5,2.6],[1.4,5,7],[1.66,4,5],[2.9,3.5,2.37],[1.25,6.5,9],[2.15,3.5,3.25],[5.5,4.33,1.57],[1.53,4.75,5.5],[1.9,3.75,3.8],[5.5,5,1.5],[1.7,4.2,4.5],[2.3,3.75,2.87],[4.33,3.4,1.9],[1.75,3.75,4.75],[2,3.8,3.4],[1.25,6.5,11],[1.8,4,4.1],[1.8,3.8,4.33],[1.65,4.2,4.75],[2.75,3.75,2.4],[2.05,3.4,3.8],[4,3.75,1.9],[2.9,3.5,2.37],[2.15,3.75,3.1],[4.33,4,1.72],[1.22,7,11],[10,6.5,1.25],[2.9,3.75,2.25],[2,3.75,3.5],[1.65,4.33,4.5],[2.15,3.4,3.4],[1.7,4,4.75],[3.1,3.6,2.2],[1.14,9.5,15],[3.2,3.5,2.25],[1.95,3.8,3.75],[3,3.75,2.2],[1.9,3.8,3.75],[1.72,4,4.5],[3.4,3.75,2.05],[1.55,4.2,6],[3.2,4,2.15],[2.2,3.5,3.2],[2.2,3.6,3.1],[2.25,3.75,3.1],[1.72,4.2,4.33],[3.6,4,1.9],[15,7.5,1.16],[2.75,3.5,2.45],[2,3.3,4],[3.6,4.33,1.85],[2.38,3.5,2.9],[1.36,5,8.5],[2.4,3.5,2.88],[2.25,3.4,3.2],[2.55,3.4,2.75],[2.25,3.8,2.9],[1.3,6,8],[2.63,3.8,2.45],[5.75,4.33,1.53],[1.2,7.5,12],[3,3.4,2.3],[2.1,3.5,3.4],[2.9,3.6,2.3],[3,3.6,2.25],[2.5,3.5,2.7],[1.4,5.25,6.5],[2.8,3.2,2.63],[1.33,5,9],[1.5,4.5,6.25],[3.5,3.25,2.2],[2,3.9,3.4],[1.7,4,4.75],[3.2,3.6,2.15],[1.33,6,7.5],[3.8,3.6,1.95],[2.45,3.8,2.63],[4,3.8,1.85],[2.75,3.5,2.5],[1.67,4,5],[1.45,4.5,6.5],[4.2,3.6,1.91],[1.95,3.5,4],[1.53,4.5,5.75],[2,3.6,3.6],[5.25,4.5,1.57],[3.6,3.8,1.95],[1.11,10,17],[1.8,3.8,4.33],[2.88,3.6,2.38],[1.8,4,4.2],[4,4,1.8],[1.7,3.75,5],[2.88,3.5,2.4],[2.7,3.5,2.5],[2.7,3.5,2.6],[3.1,3.5,2.25],[7,5.75,1.36],[2.45,3.4,2.88],[3.3,3.6,2.15],[1.62,4.2,5.25],[1.6,3.8,6],[1.33,5.5,8.5],[1.8,3.8,4.2],[2.15,3.6,3.2],[2.3,3.5,3],[2.1,3.6,3.25],[4,4.2,1.75],[1.7,4,4.6],[2,3.8,3.6],[3,3.4,2.45],[2.15,3.5,3.25],[1.33,5.25,9],[2.2,3.5,3.2],[2.3,3.5,3],[2.3,3.4,3.1],[1.91,3.6,4],[2.4,3.6,2.8],[1.91,3.4,4.33],[7,5.25,1.4],[1.53,4.2,6],[2.45,3.5,2.8],[1.73,3.75,4.75],[1.13,9,19],[1.8,4,4.2],[2.9,3.4,2.45],[1.4,5,7],[4.5,4,1.73],[1.91,3.6,4],[3.3,3.75,2.1],[2.25,3.25,3.3],[1.8,4,4.2],[2.3,3.4,3.1],[5.5,4.33,1.55],[2.05,3.5,3.5],[2.38,3.4,2.9],[1.45,4.75,6.5],[2.38,3.2,3.2],[5.25,4.5,1.55],[2.1,3.5,3.3],[1.5,4.33,6.5],[1.62,4,5.5],[1.53,4.5,5.5],[3.8,3.75,1.91],[2.05,3.2,3.9],[1.62,4,5.5],[1.45,5,6],[2.25,3.6,3],[2.3,3.5,3],[2.8,3.4,2.55],[1.6,4,5.75],[6.5,5,1.45],[1.8,4,4],[1.7,4,4.75],[5.5,4,1.62],[2.38,3.6,2.88],[3.1,3.5,2.25],[1.91,3.8,3.8],[2.25,3.3,3.2],[1.22,7.5,11],[2.55,3.4,2.7],[1.25,6.5,10],[3.5,3.8,1.95],[1.73,4.2,4.33],[2.7,3.5,2.55],[1.6,3.8,6],[2.75,3.6,2.4],[3.2,3.6,2.15],[3,3.5,2.3],[2.25,3.5,3.1],[2.2,3.5,3.2],[5.25,4.5,1.57],[1.62,4.5,4.75],[1.8,3.75,4.5],[2.5,3.6,2.63],[2.38,3.3,3.1],[6,5.25,1.44],[1.53,4.5,5.5],[2.4,3.25,3],[1.44,5,6.5],[1.8,4,4.2],[2.8,3.4,2.45],[2.25,3.5,3.1],[1.11,10,19],[2.2,3.5,3.1],[1.67,4,5],[1.62,4,5.25],[3.4,3.25,2.2],[4,3.75,1.85],[3.1,3.5,2.25],[2.3,3.6,2.9],[1.85,3.8,4],[8.5,6,1.3],[1.44,5.25,5.75],[1.85,3.75,4],[1.13,10,17],[2.1,3.6,3.3],[2.1,3.6,3.3],[2.2,3.2,3.5],[1.91,3.75,3.8],[1.25,6.5,10],[2.5,3.4,2.75],[1.25,6.5,10],[2,3.8,3.4],[2.2,3.6,3.1],[2.5,3.4,2.8],[3,3.6,2.25],[2.6,3.6,2.55],[1.5,5,5.5],[2.5,3.5,2.7],[7,5.5,1.36],[1.45,5.25,5.75],[3.25,4,2],[1.14,8.5,15],[2.4,3.75,2.7],[7.5,6,1.3],[2.2,3.8,3],[1.6,4.5,4.75],[1.57,4.75,5],[1.44,4.75,7],[1.36,5.25,8],[1.33,5.25,8.5],[2.62,3.25,2.75],[9.5,6.5,1.25],[2.87,3.3,2.5],[2.7,3.25,2.7],[1.57,4.33,5.25],[1.7,4,4.5],[2.2,3.5,3.3],[1.36,5.25,8.5],[1.57,4.2,5.5],[3,3.4,2.4],[2.15,3.5,3.25],[1.08,12,21],[3.2,3.25,2.3],[2.2,3.25,3.5],[2.15,3.2,3.6],[2.7,3.2,2.7],[2.15,3.3,3.5],[4.2,3.8,1.83],[1.28,5.75,9],[1.75,3.8,4.33],[1.6,4.2,5.5],[1.75,3.5,4.75],[2.3,3.25,3.2],[3.75,3.4,2.05],[2.1,3.4,3.5],[2.05,3.5,3.6],[1.4,4.75,8],[6,4.75,1.5],[3.4,3.2,2.2],[3.5,3.6,2.05],[2.55,3.5,2.7],[2.37,3.3,3],[1.9,3.6,4],[2.05,3.4,3.8],[2.7,3.5,2.55],[2.45,3.3,2.9],[4.2,4,1.75],[1.18,8,13],[2.45,3.3,2.87],[1.28,6,8.5],[1.36,5.25,8],[2.1,3.3,3.6],[1.85,3.6,4.2],[1.53,4,6.5],[2,3.5,3.75],[1.36,5,8.5],[1.45,4.75,6.5],[13,7,1.2],[4.75,4,1.66],[1.28,5.75,10],[9.5,6.5,1.28],[3.25,3.75,2.1],[2.45,3.2,2.9],[2.8,3.4,2.45],[2.8,3.5,2.4],[3.2,3.5,2.25],[4.33,4,1.75],[2.7,3.6,2.37],[4.5,4.5,1.65],[1.5,4.5,6],[1.07,13,23],[1.95,3.75,3.75],[1.66,3.75,5.5],[3.3,3,2.4],[2.4,3.6,2.75],[2.1,3.25,3.75],[2.2,3.5,3.2],[1.4,4.75,8],[2.5,3.5,2.7],[2.7,3.3,2.6],[2.45,3.6,2.7],[1.75,3.9,4.5],[3.1,3.5,2.25],[2.05,3.3,4],[2.25,3.4,3.2],[2.05,3.6,3.6],[1.61,4,5.5],[3.1,3.5,2.2],[4.5,4.75,1.61],[4.5,3.8,1.72],[3,3.5,2.3],[1.16,8.5,13],[2.87,3.6,2.37],[2.2,3.1,3.6],[2.7,3.5,2.55],[1.85,3.8,3.75],[2.5,3.4,2.8],[1.53,4.5,5.5],[2.5,3.8,2.55],[1.45,5,6],[1.33,4.75,10],[7,5.5,1.4],[3.6,4,1.9],[2.62,3.4,2.6],[2.3,3.5,3],[2.1,3.5,3.5],[1.72,3.6,5],[1.5,4.33,6],[2.45,3.6,2.7],[3.1,3.3,2.37],[2.25,3.4,3.25],[1.4,5,7],[1.83,3.8,4],[3.6,3.5,2.05],[2.2,3.3,3.4],[2.3,3.7,2.87],[2.15,3.2,3.6],[1.36,5.25,8],[1.36,5.5,7.5],[9,5.5,1.3],[4,3.8,1.85],[2.15,3.5,3.3],[4,4,1.83],[2.37,3.4,3],[1.83,3.6,4.2],[2.2,3.5,3.2],[2.3,3.5,3],[1.85,3.5,4.33],[2.45,3.7,2.7],[1.55,4.5,5.5],[1.09,11,23],[2.9,3.5,2.37],[2.6,3.1,2.9],[2.62,3.3,2.7],[1.4,5.25,7],[2,3.75,3.6],[1.33,5.5,8],[2.45,3.4,2.87],[2,3.75,3.5],[1.95,3.6,3.8],[2.8,3.2,2.62],[5,4,1.66],[9.5,6.5,1.28],[2.37,3.5,2.9],[1.8,3.75,4.33],[2.05,3.5,3.4],[3.2,3.8,2.1],[2.45,3.6,2.75],[2.2,3.5,3.2],[1.75,3.8,4.5],[1.44,4.75,7.5],[1.5,4.5,6],[1.11,10,17],[2,3.6,3.5],[1.33,5.5,8.5],[2.5,3.4,2.8],[2,3.3,4],[2.15,3.5,3.3],[2.3,3.6,2.9],[2,3.4,4],[2.38,3.6,2.88],[4.5,4,1.73],[4.2,3.75,1.83],[3.75,3.6,1.95],[1.22,6.5,13],[1.95,3.75,3.75],[3.3,3.4,2.2],[1.5,4.5,6],[3.2,3,2.45],[2.75,3.4,2.5],[1.5,4.75,5.5],[1.85,3.4,4.33],[2,3.4,3.8],[1.5,4.5,6],[3.25,3.6,2.2],[1.8,3.8,4.33],[1.65,4,5.25],[4.5,4,1.73],[1.8,4,4],[3.1,3.1,2.5],[2.75,3.3,2.6],[4,3.6,1.91],[4.2,3.5,1.91],[3.3,3.4,2.2],[3.8,3.75,1.91],[1.8,3.6,4.5],[1.11,10,19],[3.8,3.5,1.95],[5,4,1.67],[1.36,4.75,9],[1.4,5,7.5],[1.6,4.2,5.25],[1.4,4.75,8],[2.45,3.4,2.88],[2.55,3.4,2.75],[2.4,3.25,3],[1.95,3.6,3.75],[1.4,4.75,8],[5,4.75,1.57],[4,3.5,1.95],[5,3.8,1.7],[2.1,3.6,3.4],[2.9,3.25,2.5],[2.45,3.3,3],[2.15,3.4,3.4],[2.4,3.25,3.1],[2.3,3.5,3.1],[4.5,3.6,1.83],[1.22,7,11],[2.25,3.2,3.4],[1.5,4.2,7],[4.5,3.8,1.75],[1.8,3.6,4.5],[1.73,4,4.33],[1.73,3.4,5.5],[1.5,4.33,6.5],[1.33,5.5,9],[8.5,6,1.3],[1.55,4,6.5],[1.36,5.25,7.5],[4.5,4.2,1.7],[2.25,3.5,3.1],[3.8,3.8,1.85],[2.75,3.1,2.7],[3.5,3.5,2.1],[1.85,3.6,4.2],[2.05,3.3,3.8],[4.5,3.6,1.75],[1.7,4,4.75],[1.57,3.8,6.5],[2.63,3.4,2.6],[5.5,3.5,1.7],[3.2,3.3,2.3],[2.2,3.5,3.2],[1.45,4.5,6.5],[2.38,3.3,3],[1.55,4.33,5.75],[2,3.5,3.75],[2.3,3.5,2.9],[4,3.6,1.95],[2.1,3.4,3.5],[1.83,3.5,4.5],[1.62,4,5.5],[4.5,3.6,1.8],[2,3.4,3.8],[1.57,3.8,6.5],[2.75,3.25,2.6],[1.5,4,7],[3.8,3.75,1.91],[1.36,5,8.5],[5,4,1.67],[4.33,3.75,1.8],[2.05,3.4,3.6],[2.2,3.1,3.5],[2.55,3.2,2.88],[3.5,3.3,2.15],[2.1,3.5,3.5],[2,3.6,3.6],[2.75,3.6,2.4],[1.65,3.75,5.75],[2.38,3.3,3],[1.3,5.5,10],[5.75,4.5,1.5],[1.75,3.6,4.75],[1.62,3.8,6],[2,3.25,4.2],[1.75,3.75,4.75],[1.53,4.33,6],[2.75,3.5,2.5],[1.85,3.75,4],[4,3.4,1.95],[7,4.75,1.44],[4.75,3.4,1.83],[3,3.2,2.5],[3.8,3.6,1.95],[1.73,3.75,4.75],[3,3.2,2.5],[1.8,3.75,4.33],[1.4,4.75,8],[1.6,4,5.75],[3.3,3.5,2.2],[1.25,6,11],[5.25,3.5,1.7],[1.83,3.5,4.33],[1.62,3.8,5.25],[1.91,3.4,4],[2.8,3.3,2.45],[1.45,4.75,6.5],[3,3.3,2.4],[1.45,4.33,6.5],[1.85,3.6,4.2],[2.55,3.4,2.75],[1.36,5,8],[6.5,3.9,1.55],[2.9,3.4,2.4],[2.1,3.2,3.8],[3.1,3.3,2.38],[1.53,4.33,6],[1.4,5,7],[1.5,4.33,6.5],[8,5,1.4],[3.8,3.8,1.85],[2.15,3.4,3.4],[2.8,2.9,2.8],[2.05,3.6,3.5],[1.62,3.8,5.75],[2.75,3.25,2.63],[4,3.6,1.91],[5,4.2,1.65],[3.4,3.8,2],[2.2,3.4,3.25],[1.67,4.2,4.75],[1.5,4.5,6],[2.45,3.1,3.2],[3.1,3.25,2.3],[1.8,3.75,4.33],[1.75,3.3,5.25],[1.4,5,7],[1.2,7,13],[13,7.5,1.2],[4.5,4,1.7],[2.1,3.6,3.4],[1.91,3.6,3.8],[3.1,3.1,2.38],[2.38,3.75,2.88],[1.62,4,5.25],[1.8,3.4,5],[3.3,3.25,2.3],[2.5,3.5,2.7],[2.63,3.5,2.6],[1.22,6,15],[1.5,4.5,6],[3,3.5,2.3],[1.29,5.5,11],[4.75,3.75,1.73],[1.18,8,12],[1.33,5.25,9.5],[5,4.33,1.6],[2.2,3.3,3.4],[2.6,3.2,2.8],[3.4,3.75,2.05],[2.3,3.5,3],[6.5,4.75,1.44],[3.4,3.5,2.1],[2.3,3.4,3.1],[2.4,3.4,2.9],[2.75,3.4,2.55],[1.62,4.33,5],[8.5,5.5,1.33],[1.53,4.5,5.5],[2.38,3.3,3],[1.1,11,19],[4.33,3.75,1.8],[2.1,3.2,3.75],[1.83,3.75,4.2],[1.25,6,11],[2.1,3.5,3.4],[2.8,3.6,2.4],[1.18,7.5,14],[2.38,4,2.6],[2.1,3.5,3.4],[2.4,3.6,2.75],[7,4.2,1.5],[2.05,3.5,3.6],[1.85,3.75,3.8],[1.36,5.5,7],[5.5,4.33,1.57],[5.5,4.33,1.57],[8,5.25,1.36],[1.95,3.75,3.6],[2.15,3.4,3.4],[1.13,9,17],[1.44,4.75,7],[1.57,4.75,5],[1.36,5.25,7],[2.45,3.5,2.8],[2.05,3.75,3.3],[5,4.2,1.62],[2.2,3.6,3.1],[9,5.25,1.33],[2.8,3.6,2.38],[5.75,4.2,1.55],[3,3.5,2.3],[1.45,5.25,5.5],[1.36,5.25,8],[2.38,4,2.7],[1.22,6.5,10],[2,3.8,3.4],[12,6.5,1.22],[8,5.5,1.33],[1.18,7,15],[2.7,3.4,2.55],[1.33,5.5,9],[2.2,3.4,3.3],[3,3.3,2.38],[1.75,3.75,4.6],[2.75,3.4,2.45],[2.9,3.4,2.38],[1.33,5.5,9],[1.95,3.4,4],[2.7,3.3,2.63],[1.2,7,13],[4,3.8,1.85],[2.8,3.6,2.38],[1.67,4,5],[1.7,4,4.5],[3.75,3.5,2],[5.5,4,1.6],[1.29,5.5,11],[3.8,3.75,1.91],[1.2,7,13],[2.15,3.4,3.5],[2.3,3.3,3.2],[1.3,6,8],[1.53,4.75,5.25],[3.4,3.4,2.15],[13,8,1.17],[2.2,3.75,3],[4.75,3.8,1.73],[2.9,3.25,2.5],[1.73,3.8,4.75],[3.6,4,1.85],[1.4,4.5,8.5],[1.17,8,15],[2.5,3.8,2.55],[1.91,3.3,4.33],[1.65,4.5,4.5],[1.75,3.8,4.5],[6,5,1.45],[1.91,3.6,4],[1.67,3.75,5.5],[2.15,4,2.88],[1.29,5.5,11],[7,4.5,1.45],[1.53,4.2,6],[4.33,3.75,1.8],[6,4.5,1.5],[2.2,3.5,3.25],[1.91,3.4,4.2],[3.25,3.4,2.2],[1.14,8.5,15],[1.8,3.8,4.2],[4.2,4.2,1.73],[1.67,4.33,4.33],[1.36,5.25,7.5],[1.91,3.75,3.8],[1.4,5,7],[7,4.75,1.44],[2.55,3.75,2.55],[5.5,4.5,1.53],[1.57,3.8,6.5],[1.55,4.2,5.75],[1.3,5.75,9],[1.45,4.5,7],[8,5.75,1.33],[2.9,4,2.15],[2.75,3.1,2.7],[3.6,3.5,2.05],[2.9,3,2.63],[6,4.75,1.45],[4.5,3.8,1.73],[1.91,3.6,3.8],[1.62,3.8,6],[1.67,4.2,4.75],[2.2,3.1,3.6],[3,3.8,2.2],[3.2,3.75,2.1],[3.5,3.4,2.1],[2.9,3.3,2.4],[1.33,5.75,7.5],[2.38,3.4,3],[1.83,3.75,4.2],[1.4,5.25,6.5],[1.45,4.5,7],[1.67,3.75,5.5],[3.2,3.4,2.25],[6.5,5.25,1.4],[1.85,3.6,4],[1.5,4.5,6],[4.5,3.75,1.75],[1.65,4,5.25],[1.13,8.5,19],[2.15,3.5,3.3],[4.2,4,1.75],[2.15,3.5,3.3],[1.25,6.5,9.5],[1.55,4.2,5.5],[1.29,5.75,11],[5,3.8,1.67],[3.2,3.6,2.2],[2.05,3.6,3.5],[2.75,3.25,2.6],[3.1,3.6,2.2],[1.1,11,19],[3.8,3.5,2],[2.8,3.2,2.6],[4.2,3.75,1.85],[12,6.5,1.22],[2,3.75,3.5],[3.1,3.75,2.2],[1.18,7,17],[2.45,3.2,3],[1.33,5.25,9.5],[4.75,4,1.73],[1.57,4.2,5.5],[1.25,5.75,13],[1.4,5,6.5],[1.85,3.6,4],[5,3.7,1.73],[1.73,4.2,4.2],[3.4,3.5,2.05],[3.6,3.3,2.1],[2.55,3.5,2.63],[3.2,3.6,2.15],[3.2,3.5,2.2],[4.5,3.75,1.75],[2.3,3.8,2.8],[2.7,3.4,2.55],[2.38,3.3,3],[1.25,5.5,12],[1.45,4.5,6.5],[1.8,3.6,4.5],[2.75,3.25,2.6],[1.91,3.75,3.8],[3.4,4,1.95],[1.73,4.2,4.2],[1.25,6.5,9],[2,3.5,3.8],[1.29,6,9],[1.85,3.6,4.2],[17,7,1.18],[1.91,3.8,3.75],[2.25,3.5,3.1],[2,3.4,3.75],[12,7.5,1.2],[4.75,4.2,1.7],[2.88,3.4,2.45],[3.25,3.25,2.25],[1.75,4.2,4.2],[6,4.5,1.5],[1.5,4.75,6],[1.55,4.33,5.75],[4.2,3.8,1.75],[1.85,3.6,4.33],[3.3,3.6,2.1],[3.1,3.5,2.25],[2.38,3.5,2.9],[17,8,1.14],[2.15,3.8,3.1],[4.2,4.2,1.73],[1.22,6.5,13],[1.18,8,13],[1.8,3.8,4],[3.6,3.4,2.1],[1.44,5,6],[3.2,3.75,2.1],[2.15,3.5,3.3],[1.3,6,8],[3.3,3.3,2.15],[1.22,6.5,12],[2.6,3.6,2.6],[1.67,3.75,5.25],[4.75,4.2,1.65],[2.75,3.4,2.55],[1.75,4.2,4],[2.38,3.6,2.8],[3.75,3.75,1.91],[1.5,4.33,5.75],[2.15,3.6,3.2],[2.3,3.3,3.1],[6.5,5.25,1.4],[2.6,3.5,2.6],[1.95,3.5,4.2],[1.67,4,5],[5.75,4,1.57],[2.5,3.6,2.6],[1.33,5.5,7.5],[6.5,4.2,1.5],[1.36,5.25,7.5],[2.2,3.3,3.4],[1.08,11,29],[2.63,3.3,2.7],[3.2,3.6,2.15],[5.25,4.5,1.55],[1.75,4.2,4],[1.45,4.5,7],[2.45,3.75,2.75],[2,3.6,3.6],[1.6,4.2,5.25],[5.5,4.33,1.55],[2.8,3.5,2.45],[2.2,3.75,3],[1.3,5.75,9],[1.91,3.6,4],[3.4,3.3,2.2],[4.2,4.5,1.7],[1.65,4.33,5],[7.5,5,1.4],[2.45,3.2,3],[4.2,4.2,1.75],[1.62,3.6,6.5],[1.85,4,3.8],[1.08,12,21],[1.67,4.2,4.75],[1.57,4.33,5.25],[2.4,3.75,2.75],[2.63,3.6,2.55],[3,3.6,2.25],[1.7,4,4.75],[2.9,3.4,2.38],[1.44,4.75,6.5],[5.25,4.2,1.62],[1.7,4.2,4.5],[1.62,4,5.5],[1.62,4.2,5],[2.2,3.6,3.1],[7,4.75,1.4],[1.18,8,13],[2.38,3.5,2.8],[1.17,8,17],[1.75,3.75,4.75],[1.8,4.2,3.8],[2.1,3.6,3.4],[3.3,3.75,2.05],[6,4.33,1.53],[2.15,3.75,3.1],[4.2,3.8,1.85],[5.5,4.33,1.57],[10,5.75,1.29],[2.9,3.75,2.2],[1.83,4.2,3.75],[2.38,3.5,2.9],[1.53,4.75,5.25],[1.33,5.5,8],[5,4.2,1.62],[4,4,1.8],[1.7,3.6,5.25],[1.18,8,13],[1.2,7,13],[1.53,4.5,5.75],[1.83,3.8,4.2],[1.95,3.5,4],[1.57,4.33,5.5],[7,5.25,1.4],[1.36,5.25,8],[1.44,4.75,7],[2.5,3.5,2.75],[3.1,3.75,2.15],[2.05,3.6,3.5],[2.55,3.6,2.63],[1.91,4,3.6],[6,4.33,1.53],[1.5,4.33,6.5],[4.33,4.2,1.73],[3.75,3.6,1.95],[1.25,5.75,11],[17,7,1.18],[1.83,3.6,4],[1.33,5.25,8],[1.75,3.8,4.2],[2.5,3.4,2.75],[1.22,7,11],[2.38,4,2.6],[1.8,4,4],[1.67,4,4.75],[3,3.75,2.2],[1.91,4,3.6],[1.5,4.75,5.75],[3.25,3.6,2.15],[2.8,3.5,2.45],[3.5,3.8,1.95],[2.63,3.75,2.45],[1.83,4.2,3.8],[2.2,3.6,3.2],[1.29,6,9.5],[2.2,3.3,3.4],[4.5,4,1.73],[1.2,8,11],[1.6,4.33,5],[3,3.8,2.2],[1.36,5.5,7.5],[1.91,3.8,3.8],[2,3.75,3.5],[2.7,3.4,2.63],[1.95,3.8,3.6],[2.45,3.6,2.75],[3.3,4.2,1.95],[1.1,10,19],[2.38,3.8,2.75],[1.3,6,8],[1.09,12,21],[2,4,3.4],[9.5,5.25,1.33],[1.7,4,4.75],[1.65,4,5.25],[2.38,3.8,2.8],[3.75,3.8,1.91],[2.5,3.6,2.7],[5,4.33,1.62],[4.75,4.5,1.6],[7,5.25,1.4],[1.4,5.5,6.5],[2.7,4,2.3],[1.44,5,6.5],[3.5,3.75,2],[1.1,11,19],[2.1,3.4,3.5],[2.4,3.9,2.6],[1.22,7,12],[2.38,3.6,2.8],[1.29,5.75,10],[1.7,4.2,4.5],[3.1,3.75,2.15],[2.75,3.6,2.45],[8.5,4.5,1.4],[2.05,3.5,3.6],[1.85,4,3.6],[2.1,3.6,3.4],[5.25,4.5,1.57],[1.44,5,6],[2.7,3.6,2.5],[2.75,3.6,2.4],[7,5,1.4],[1.3,6.5,7.5],[6.5,5,1.4],[5.5,5,1.5],[2.1,3.5,3.5],[1.5,4.75,5.5],[1.22,7,11],[1.95,3.8,3.6],[2.3,3.5,3],[2.15,3.8,3],[2.25,3.8,2.9],[4.2,4.2,1.75],[8,6,1.3],[2.15,3.8,3],[2.6,3.6,2.55],[1.22,7.5,11],[2.1,3.8,3.2],[3.4,4,1.95],[4.75,4.2,1.65],[1.08,12,21],[2.75,3.75,2.45],[1.65,4.5,4.5],[1.5,5.75,5],[2.38,3.75,2.8],[13,7,1.2],[1.95,4,3.5],[1.4,4.8,7.5],[1.57,4.75,4.75],[1.36,5.75,7],[1.8,4.2,3.8],[2.88,3.5,2.38],[3.4,3.8,2],[7,5.5,1.36],[4.2,4.33,1.7],[6.5,6,1.36],[3.3,4,1.95],[2.75,4,2.3],[1.18,8,12],[2.9,3.9,2.2],[2.15,4,2.9],[3,3.5,2.3],[1.45,5,6],[1.85,4.33,3.6],[1.17,8,15],[2.9,3.9,2.2],[1.08,12,21],[7,6,1.33],[2.45,3.3,2.9],[1.91,3.5,4.2],[1.62,4,5.25],[2.4,3,3.3],[3.3,3.5,2.15],[2.05,3.2,3.9],[1.75,4,4.2],[6.5,3.8,1.57],[2.2,3,3.75],[1.3,5.5,9.5],[2.8,3.2,2.6],[1.57,3.9,6],[1.73,3.4,5.5],[8,4.75,1.4],[2.9,3,2.63],[2.05,3.1,4],[1.2,7,13],[3.8,3.4,2],[3.3,3.1,2.35],[2.75,3,2.8],[4.33,3.1,2],[4.75,3.9,1.7],[2.25,3.2,3.3],[2.6,3,3],[2.05,3.4,3.6],[3.6,3.5,2],[1.91,3.4,4],[1.85,3.5,4.2],[2.2,2.88,3.8],[4.2,3.3,1.95],[3.4,3.4,2.15],[2.8,3.4,2.5],[1.44,4.5,7],[1.33,5.25,9.5],[2.9,2.88,2.75],[1.95,3.4,4],[1.67,3.8,5.25],[3.3,3,2.38],[5.25,4,1.65],[2,3.25,4],[1.53,4,7],[3.8,3.3,2.05],[2,3.1,4.33],[1.36,5.25,7.5],[2.63,3,3],[1.44,4.5,7],[1.62,4,5.5],[1.65,4,5],[2.63,3.5,2.6],[4.2,3,2.05],[1.85,3.5,4.2],[2.6,3.1,2.88],[1.29,6,9],[3,3.6,2.3],[1.53,3.8,7],[2.5,3.5,2.63],[1.8,3.5,4.5],[1.95,3.5,3.6],[2.7,3.4,2.55],[1.67,3.8,5],[7.5,4.2,1.5],[1.62,3.6,6.5],[1.2,7,11],[2.25,3.5,3.1],[2.5,3.2,2.88],[2.63,3.1,2.8],[1.7,3.6,5.25],[3,3.3,2.38],[3.4,3.4,2.15],[1.36,5.25,8],[2.9,3.1,2.6],[2.1,3.1,4],[3.5,4,1.95],[2.2,3.2,3.5],[1.95,3.6,3.75],[2.75,3,2.8],[1.33,5,10],[2.3,3.25,3.3],[2.5,3.2,3],[1.36,5,8],[3.25,3.4,2.25],[1.29,6,9.5],[2.5,3,3.2],[1.85,3.6,4.2],[1.6,4,5.75],[1.83,3.4,4.5],[2.8,3.25,2.6],[2.05,3.1,4.2],[6.5,5.25,1.4],[1.73,3.8,4.75],[1.55,3.8,7],[2.5,3,3.1],[4.2,3.6,1.85],[3.5,3.5,2.1],[2.63,3.1,2.8],[1.45,4.5,7],[1.7,3.75,5],[1.62,4,5.5],[1.75,3.6,5],[1.7,4.2,4.5],[2.25,3.5,3.1],[2.55,3.6,2.6],[2.25,3,3.5],[3.3,3.25,2.25],[2.05,3.5,3.6],[3.1,3.2,2.38],[1.62,3.8,5.75],[1.4,4.75,8.5],[3.1,3.5,2.25],[5.75,3.6,1.65],[2.9,3.4,2.4],[1.91,3.3,4.5],[2.6,3.4,2.7],[3.1,3.5,2.25],[1.75,3.75,4.75],[1.65,4,5],[2.8,3.6,2.4],[1.29,5.5,12],[1.91,3.1,4.75],[1.67,3.8,5],[2.88,3.5,2.4],[4.75,3.8,1.73],[2.5,3.1,3],[1.95,3.4,4],[1.33,5.5,8.5],[1.25,6,11],[2.05,3.5,3.6],[1.36,5.5,7.5],[1.7,3.6,5],[5.25,4,1.65],[2.2,3.25,3.5],[1.65,3.75,5.5],[1.33,5,9.5],[2.15,3.5,3.3],[1.75,3.6,4.75],[6,4.5,1.5],[1.7,3.75,5.25],[2.25,3.5,3.1],[1.95,3.2,4.33],[2.38,2.9,3.4],[1.7,4,4.75],[1.57,4.2,5.75],[1.17,8,15],[3.4,3.25,2.2],[2.45,3,3.25],[3.2,3.6,2.2],[2,3.6,3.6],[2,3.75,3.5],[1.57,3.8,6.5],[2.6,2.9,3.1],[2.1,3,4.2],[4.2,3.8,1.8],[3.4,3.4,2.1],[2.75,3.1,2.75],[1.22,6.5,12],[2.9,3.1,2.55],[1.53,5,5.5],[5,4,1.67],[2.45,3.1,3.1],[2.2,3.2,3.5],[1.67,4,5],[2.45,3.3,2.9],[1.95,3.4,4.2],[5,3.8,1.67],[2.7,3.2,2.7],[1.7,4,5],[1.91,3.3,4.33],[1.29,6,9],[1.53,4,6.5],[2.2,3.2,3.5],[1.45,4.33,7.5],[2.8,3.4,2.5],[1.14,8.5,15],[1.36,5,7],[2.4,3.6,2.88],[2.8,3.5,2.38],[4.75,3.1,1.75],[5.75,4,1.53],[2.3,2.9,3.3],[1.53,4.33,5.75],[2.38,3,3.3],[1.6,3.75,6.5],[2.05,3.5,3.6],[2.25,3.1,3.5],[2.4,3.3,3],[1.2,6.5,15],[2.55,3.6,2.63],[1.7,4,4.75],[3,3.3,2.38],[5.5,4.33,1.57],[1.91,3.4,4.2],[2.5,3.3,2.8],[2.5,3.1,3],[2,3.4,3.8],[1.62,4.2,4.75],[4.5,4,1.7],[2.88,3,2.7],[1.7,3.5,5.75],[1.85,3.3,4.5],[2.05,3.5,3.6],[3.3,3.3,2.25],[3.25,3,2.4],[2.15,3,4],[1.13,10,17],[4.33,3.8,1.8],[1.73,4,4.5],[4.75,3.8,1.7],[2.6,3.2,2.8],[1.67,3.75,5.5],[6.5,4.75,1.45],[1.36,5.5,8],[2.3,3.2,3.2],[2.8,3.4,2.5],[5.5,3.4,1.73],[2,3.4,3.75],[1.45,4.33,7],[1.8,3.4,4.75],[1.33,5,10],[1.5,4.2,6.5],[6,4.2,1.55],[1.53,3.9,7],[1.65,3.75,5.5],[2.3,3.2,3.3],[4.33,3.6,1.85],[2.1,3.4,3.5],[1.62,4,5.5],[2.38,3.1,3.3],[1.91,3.4,4.2],[1.73,4,4.5],[2.15,3.3,3.5],[3,3,2.6],[2.2,3.4,3.3],[1.85,3.2,5],[1.45,5,6],[2.75,3,2.9],[2.2,3.1,3.6],[2.3,3,3.4],[3.5,3.5,2.05],[1.22,7.5,10],[4.33,4,1.73],[1.95,3.5,3.8],[1.5,4.75,6.5],[1.75,3.3,5.5],[3.8,3.8,1.85],[2.25,3.3,3.3],[6,3.75,1.62],[2.1,3.5,3.4],[3.4,2.8,2.5],[2.1,3.3,3.75],[1.91,3.6,4],[1.73,3.6,5],[1.4,5,7],[1.91,3,5],[4.75,4,1.7],[3.1,3,2.5],[3.6,3.1,2.2],[2.38,2.9,3.5],[1.29,6,9],[1.65,4.2,4.75],[1.85,3.6,4.2],[2.6,3,3],[1.8,3.3,5.25],[2,3.1,4.33],[5.25,3.8,1.67],[1.65,4,5],[1.57,4.2,5.75],[3.25,3.2,2.3],[2.88,3.5,2.4],[2.38,3.1,3.25],[1.44,4.75,6.5],[2,3.2,4.2],[4.75,3.6,1.73],[4.5,3.3,1.85],[1.62,4.2,5.25],[2.15,3.1,3.75],[4,3.3,2],[1.3,6,8],[2.05,3.5,3.4],[3.1,3.3,2.38],[1.5,4,8.5],[1.83,3.3,5],[5.75,4.2,1.55],[3.1,3.5,2.25],[1.55,3.75,7],[2,3.4,3.75],[1.95,3.5,4],[2.05,3.5,3.6],[2.5,3.25,3],[2.38,3.6,2.8],[2,3.3,4.2],[2.55,3.1,3],[2.63,3.2,2.8],[2.05,3,4.2],[1.25,6.5,10],[1.95,3.3,4],[1.75,3.8,4.75],[3.5,2.9,2.38],[1.53,4.33,6],[2.9,3.75,2.25],[3.4,3.1,2.3],[2.1,3.4,3.5],[1.91,3.6,3.8],[2.2,3,3.7],[5,3.6,1.75],[4.33,3.6,1.83],[2.7,3.2,2.7],[3,3,2.55],[1.75,4,4.33],[1.33,5,10],[2.2,3.1,3.75],[1.25,6,11],[1.73,3.75,5],[2.2,3.1,3.6],[2.2,3.2,3.5],[1.4,4.75,8],[3.8,3.1,2.15],[3.4,3.8,2.05],[4,3.5,1.95],[1.85,3.8,4],[1.95,3.1,4.5],[2.45,3.25,2.9],[4.5,3.8,1.75],[2.7,3.4,2.63],[2.75,3.1,2.7],[1.95,3.5,4],[2.5,2.9,3.2],[2.55,3.1,3],[1.65,4,5],[2.05,3.4,3.6],[1.36,5,7.5],[4,3.2,2.05],[1.33,5,10],[1.33,5.25,8.5],[2.7,3.75,2.4],[3.75,3.2,2.15],[3.2,3.25,2.38],[2.3,3.6,2.88],[2.1,3,4],[1.65,4,5.25],[1.57,4,5.75],[3.5,3.6,2.05],[1.65,3.5,6.5],[1.83,4,3.8],[5.5,4.6,1.53],[1.44,4.33,7.5],[2.1,3.2,3.8],[1.42,4.75,7],[2.25,3.1,3.5],[1.33,5.5,8.5],[1.8,3.6,4.5],[2.8,2.9,2.88],[1.22,7.5,11],[1.7,4.5,4.2],[1.9,3.6,4],[1.65,3.8,5.5],[2.63,3.3,2.7],[4.75,3.4,1.83],[4,3.5,1.91],[6.5,5,1.44],[1.6,3.9,5.75],[2,3.2,4.1],[1.7,3.9,4.75],[1.4,4.5,8],[1.25,6,12],[2.55,3.2,2.88],[1.8,3.5,4.75],[3.7,3.6,2],[1.5,4.1,7],[3,3.5,2.3],[3.2,3.75,2.05],[1.22,6.5,12],[2.9,3.6,2.3],[2.4,3.3,3],[2.05,3.6,3.5],[2.88,3.5,2.38],[1.33,6,7.5],[2.3,3.25,3.2],[1.95,3.5,3.8],[2.4,3.3,3],[4,4,1.8],[2.25,3.2,3.3],[8.5,5,1.36],[3.4,3.25,2.2],[1.4,5,7],[1.53,4,6.5],[3.5,3.4,2.1],[3.6,3.3,2.1],[4.33,3.6,1.83],[1.67,3.75,5.25],[4,3.4,1.95],[5,4,1.67],[1.91,3.5,4.2],[1.65,3.8,5],[4.33,3.5,1.83],[1.57,4.2,5.75],[1.5,4.5,6],[1.55,4,6],[1.33,5.5,8.5],[2.7,3.2,2.63],[7.5,4.5,1.44],[2,3.6,3.75],[2.8,3.1,2.63],[1.7,3.75,5],[1.8,3.6,4.5],[1.62,4,5.25],[1.62,4,5.5],[1.65,3.8,5.25],[2,3.3,4],[5.25,3.8,1.67],[2,3.3,4],[1.91,3.4,4.33],[2.15,3.5,3.4],[5.5,3.8,1.67],[2.88,3.3,2.5],[2.8,3.4,2.5],[2.1,3.4,3.5],[2.38,3.5,2.88],[1.44,4.5,7.5],[3.6,3.25,2.2],[3.1,3.3,2.38],[2.5,3.2,2.9],[2.45,3.2,3.1],[1.36,4.75,9],[4,4,1.8],[1.8,3.8,4.2],[9,5.25,1.33],[1.4,5,8],[3.2,3.5,2.25],[3.75,3.6,1.91],[3.1,2.9,2.6],[1.5,4.2,7],[5.25,3.8,1.67],[2.3,3.3,3.2],[4.2,3.75,1.83],[1.33,5.5,8],[2.15,3.25,3.5],[1.36,5,8.5],[3.75,3.6,1.95],[2.38,3.3,3],[3.8,3.25,2.05],[4.75,3.8,1.75],[1.73,3.6,5],[8,4.75,1.4],[1.62,4,5.5],[2.38,3.1,3.2],[2.5,3.4,2.8],[1.44,4.2,8],[2.25,3.75,2.88],[1.85,3.5,4.33],[1.5,4.2,7],[3.1,3.25,2.38],[2.55,3.4,2.7],[1.36,5.5,7.5],[1.91,3.3,4.33],[4.2,3.5,1.91],[1.7,3.8,5],[2.35,3.3,3.1],[2.7,3.3,2.63],[4.75,3.3,1.83],[1.6,4.2,5.5],[5.5,3.75,1.65],[5.5,3.6,1.7],[2.7,3.5,2.5],[1.7,3.6,5.25],[1.73,3.75,5],[2.2,3.2,3.5],[1.55,3.8,6.5],[2.25,3.4,3.2],[2.2,3.3,3.4],[1.44,4.33,8],[1.73,3.6,5.25],[2.6,3.4,2.63],[2.75,3,2.8],[1.36,5,8],[2.3,3.3,3.2],[2,3.6,3.6],[1.62,4,5.5],[2.2,3.4,3.3],[5.25,3.75,1.67],[2.25,3.25,3.25],[2.63,3.2,2.75],[7,4.75,1.44],[3.3,3.5,2.15],[1.45,4.5,7],[3.2,3.25,2.3],[2.7,3.2,2.7],[1.57,3.8,6.5],[2.9,3.2,2.55],[2,3.6,3.6],[2.15,3.4,3.4],[1.65,4.2,4.75],[1.91,3.3,4.33],[5,3.6,1.75],[1.36,5,8],[2.5,3.1,3],[1.22,7,11],[2,3.4,3.8],[3.75,3.5,2],[3,3,2.63],[1.18,8,13],[4.75,3.75,1.75],[2.7,3.4,2.63],[2.1,3.3,3.5],[2.88,3.25,2.5],[2.75,3.6,2.4],[2.5,3.25,2.88],[1.62,3.8,5.75],[3.3,3.25,2.25],[2.75,3,2.88],[2.3,3.25,3.2],[4.2,3.3,1.95],[1.91,3.6,3.8],[1.62,4,5.25],[1.44,4.5,7.5],[3,3.2,2.45],[1.45,4.75,7],[1.7,3.6,5.25],[3.8,3.75,1.91],[2.8,3.5,2.4],[2.9,3.2,2.45],[2.25,3.25,3.25],[4.2,3.4,1.95],[2.5,3.2,3],[1.29,6.5,9],[3.4,3.2,2.25],[2.15,3.1,3.75],[3.75,3.3,2.05],[2.1,3.3,3.5],[2.55,3.2,3],[2.3,3.5,3],[4.75,3.2,1.91],[2.15,3.3,3.5],[1.33,5,9.5],[1.6,3.8,6],[1.62,4.33,5],[1.4,5,7],[2.25,3.5,3.1],[2.38,3,3.25],[4.75,3.8,1.73],[1.3,5.5,10],[4.2,3.4,1.91],[2.25,3.3,3.25],[2.88,3.2,2.55],[8,4.5,1.44],[6,3.75,1.62],[2.7,3.2,2.75],[1.75,3.5,5],[1.22,7,11],[2.38,3.25,3.1],[3,3.1,2.5],[2.1,3.2,3.6],[1.62,4,5.5],[5.5,3.8,1.65],[1.67,3.8,5.25],[1.4,4.6,8],[2.05,3.4,3.6],[3.5,3.1,2.25],[1.45,4.75,6.5],[1.91,3.4,4.2],[2.05,3,4.2],[2.05,3,4.33],[1.17,8,13],[2.63,3.3,2.7],[2.2,3.25,3.4],[3.25,3.5,2.15],[5.25,3.8,1.67],[2.9,3.2,2.5],[3.5,3.2,2.2],[7.5,4.5,1.4],[2.4,3.2,3.1],[2.9,3,2.63],[1.33,5,8.5],[2.15,3.25,3.5],[7,4,1.5],[1.65,3.6,5.75],[3,3.1,2.5],[1.67,3.75,5.5],[2.2,3.2,3.5],[1.44,4.5,7.5],[1.4,4.2,8.5],[1.44,4.2,8.5],[4,3.8,1.85],[2.4,3.4,2.9],[2.8,3.3,2.55],[3.6,3.2,2.15],[6,3.5,1.65],[3.5,3.2,2.2],[1.5,4.5,6],[1.29,5.5,10],[1.67,3.75,5.25],[2.1,3.1,4],[2.25,3.4,3.2],[2.45,3.3,2.9],[2.25,3.3,3.3],[4.2,3.6,1.85],[5.25,3.8,1.67],[3.75,3.2,2.1],[3,3,2.6],[2.25,3.3,3.3],[5,4.2,1.62],[1.7,3.75,5],[1.5,4,7.5],[1.4,4.5,8.5],[2.05,3.4,3.75],[1.8,3.5,4.75],[1.44,4.33,7.5],[2.38,3.2,3.2],[3.5,3.3,2.15],[4.2,3.5,1.91],[3.4,3.3,2.2],[1.5,4.33,6.5],[1.73,3.6,5.25],[2.05,3.4,3.75],[3.75,3.3,2.05],[1.95,3.6,3.8],[1.44,4.5,8],[2.3,3.2,3.2],[1.8,3.4,4.75],[1.14,8.5,15],[1.6,3.75,6],[5.75,3.5,1.67],[1.36,5.5,8],[2.3,3.1,3.4],[3.75,3.3,2.05],[1.91,3.6,4],[3.8,3.75,1.91],[4.75,3.5,1.8],[2.4,2.9,3.25],[1.55,3.8,7],[2.2,3.4,3.3],[3,3.1,2.5],[2.25,3,3.6],[1.3,5.5,10],[4.2,3.75,1.83],[7,4.5,1.44],[2.38,3.4,3],[1.91,3.25,4.5],[2.25,3.1,3.5],[4,3.8,1.8],[1.62,4,5.5],[3.5,3.2,2.2],[1.65,3.8,5.75],[3.75,3.4,2.05],[2.63,3,2.9],[2.2,3.4,3.25],[2.15,3.25,3.6],[2.25,3.3,3.3],[1.91,3.4,4.2],[2.38,3.1,3.3],[1.3,5.75,9.5],[1.75,3.6,5],[1.83,3.6,4.33],[2.2,3.6,3.1],[3.5,3.3,2.15],[2.15,3.2,3.5],[2.2,3.25,3.4],[1.44,5,6.5],[2.2,3.3,3.3],[2.55,3.3,2.75],[1.91,3.5,4],[4,3.2,2],[2.05,3.5,3.6],[2.8,2.9,2.8],[2.9,3.2,2.5],[3.5,3.4,2.15],[1.5,4,7],[5.25,3.75,1.7],[1.36,4.75,8],[1.57,4,6],[2.1,3.6,3.4],[1.95,3.6,3.8],[1.83,3.4,4.75],[3.1,3.1,2.45],[2.88,3.3,2.5],[1.3,5.5,10],[2.15,3.2,3.6],[2.75,3.25,2.6],[4.5,3.5,1.83],[1.22,7,12],[3.25,3.5,2.2],[1.36,4.75,8.5],[2.2,3.1,3.6],[3.5,3.2,2.25],[4.2,3.5,1.91],[4,3.8,1.85],[4.75,3.8,1.73],[2.75,3,2.8],[1.83,3.4,4.75],[6.5,4.5,1.5],[1.33,5,9.5],[2.25,3.1,3.6],[3.75,3,2.2],[1.55,4,6.5],[1.33,5.5,8],[4.5,3.8,1.75],[1.18,8,12],[1.85,3.5,4.33],[1.45,4.5,7],[3.1,3.1,2.45],[5,3.5,1.75],[4.75,4,1.7],[2.55,3.1,3],[2.3,3.3,3.2],[1.67,3.8,5.25],[5,4,1.67],[4,3.8,1.85],[2.4,3.1,3.2],[3.75,3.6,2],[3.3,3.4,2.15],[1.4,4.75,7.5],[2,3.25,4],[2.1,3.3,3.6],[1.62,3.8,6],[1.53,3.8,7],[1.6,3.8,6],[1.44,4.5,7.5],[1.95,3.6,4],[1.7,3.8,5],[2.25,3.1,3.5],[2.88,2.8,2.88],[4.33,3.75,1.83],[6,4.5,1.5],[2.15,3.2,3.75],[2.38,3.3,3.1],[3.1,3.3,2.3],[1.45,4.5,6.5],[2.88,3.1,2.7],[7.5,5.5,1.36],[3.75,3.6,1.95],[4.5,4,1.73],[2.1,3.4,3.5],[1.4,5.25,6.5],[1.57,4,5.75],[2.2,3.5,3.2],[3,3,2.55],[1.14,8.5,17],[2,3.6,3.6],[2.63,3.1,2.8],[1.55,4.2,5.75],[2.25,3.4,3.1],[4.5,3.8,1.75],[2.8,3.2,2.6],[2.35,3.3,3.1],[3,3.4,2.3],[2,3.4,3.8],[1.62,4,5],[1.48,4.2,7],[5,3.8,1.7],[2.45,3.1,3.1],[4.2,3.75,1.8],[3.4,3.4,2.15],[1.33,5.5,8.5],[1.18,8,12],[3.3,3.5,2.1],[1.42,5,6.25],[1.95,3.6,3.6],[2.38,3.25,3],[1.36,5.25,7.5],[5.5,4,1.53],[1.48,4.75,6],[7.5,6.5,1.3],[2.7,3.6,2.45],[2.3,3.6,2.9],[2.45,3.6,2.75],[1.65,4.33,4.5],[1.6,4.2,5.25],[1.4,5,7],[1.95,3.5,3.9],[1.36,5.25,7.5],[1.5,4.75,5.75],[7,5,1.4],[4,3.3,1.95],[2.3,3.4,3],[1.7,3.75,4.75],[3,3.6,2.25],[3.8,3.8,1.85],[2.38,3.5,2.88],[1.08,12,19],[1.25,7,9.5],[2,3.75,3.75],[2.5,3.6,2.63],[1.2,7,12],[2.2,3.5,3.2],[2.63,3.5,2.55],[8.5,5.75,1.3],[2.1,3.4,3.5],[3.4,3.25,2.2],[1.65,4.5,4.5],[2.25,3.6,3.1],[3.1,3.8,2.1],[2.63,3.4,2.7],[1.25,7,10],[2.25,3.4,3.2],[2.88,3.6,2.38],[2.3,4,2.7],[2.9,3.5,2.38],[1.36,4.5,8],[2.55,3.5,2.63],[1.11,10,19],[1.65,4,4.75],[4.75,4.75,1.57],[2.05,3.6,3.4],[2.5,3.6,2.6],[1.22,6.5,12],[2.05,3.6,3.4],[3.1,4,2.05],[2.3,3.75,2.9],[2.88,3.5,2.38],[3,3.6,2.25],[5.75,4.5,1.53],[2.05,3.5,3.5],[3.4,4.2,1.91],[2.8,3.8,2.3],[1.73,4,4.75],[2.05,3.75,3.4],[1.85,3.75,4],[1.57,4.33,5.25],[1.25,6,11],[2,3.5,3.75],[2.75,3.75,2.4],[1.33,5.5,8],[1.14,8.5,17],[1.7,4,4.75],[1.29,6.5,8],[6.5,4.75,1.44],[1.7,3.75,5],[2.1,3.5,3.4],[2.5,3.5,2.7],[4.33,4,1.75],[9,6,1.29],[2.4,3.6,2.88],[2.45,3.5,2.8],[2.7,3.3,2.55],[2.9,3.5,2.38],[1.06,12,26],[1.8,4,4],[1.85,4,3.8],[2.7,3.3,2.6],[1.44,4.75,7],[3.4,3.4,2.15],[1.29,5.5,11],[2.3,3.75,2.88],[2.3,3.6,2.9],[2.1,3.8,3.2],[5,4.5,1.57],[5.75,4.2,1.6],[2.55,3.1,2.9],[4,4.33,1.75],[1.7,4.33,4.33],[4.5,4.33,1.65],[2.3,3.8,2.7],[2.63,3.6,2.55],[1.06,17,21],[3.1,3.5,2.25],[2.55,3.75,2.55],[2.45,3.4,2.88],[1.29,6,9],[3.1,3.4,2.3],[1.44,5,6.5],[9,7,1.25],[1.45,5.5,5.25],[1.55,4.33,5.75],[1.95,3.6,3.8],[6.5,5,1.45],[3.6,4,1.91],[2.6,3.6,2.6],[2.2,3.6,3.1],[1.85,3.8,3.8],[2.63,3.4,2.6],[2.63,3.6,2.55],[2.2,4,2.88],[1.25,7,9],[1.4,5.25,6.5],[2.3,3.4,3.1],[1.62,4.5,4.75],[2.63,3.6,2.55],[1.67,4.2,4.75],[9,5.5,1.3],[2.05,3.5,3.5],[2.1,3.5,3.4],[2.38,3.6,2.8],[2.25,3.5,3.1],[2.6,3.6,2.55],[2.9,3.6,2.3],[2.3,3.5,3],[2,4,3.3],[3.5,4.2,1.91],[2.7,3.4,2.6],[3.1,3.6,2.2],[1.67,4.2,4.75],[1.45,5,6],[1.8,3.8,4.2],[1.36,5,8.5],[1.45,5.25,5.5],[5,4.5,1.57],[1.55,4.75,5.25],[1.44,5,6.5],[1.95,3.6,3.8],[1.83,4,3.8],[2.8,3.6,2.38],[1.17,8,15],[1.36,5.25,7.5],[6.5,5.75,1.36],[1.14,9,12],[5.25,4.75,1.5],[2.05,3.6,3.4],[2.05,3.6,3.5],[2.2,3.4,3.25],[1.45,4.5,7.5],[5.25,4.5,1.53],[2.15,3.6,3.1],[3.5,4,1.91],[3.6,3.8,1.95],[3.8,3.75,1.91],[4.5,4,1.73],[2,3.8,3.4],[2.7,3.5,2.55],[2.4,3.8,2.7],[1.09,11,21],[1.91,3.8,3.8],[1.18,7,17],[2.15,3.4,3.5],[8.5,5.75,1.3],[1.67,4.5,4.33],[2.63,3.8,2.4],[2.4,3.5,2.88],[1.83,3.75,4.2],[1.29,5.5,10],[1.62,3.8,5.75],[1.36,5.5,7.5],[3.75,4.5,1.8],[1.14,9.5,13],[2.15,3.4,3.4],[9.5,6.5,1.25],[3.1,3.6,2.2],[2.1,3.5,3.5],[3.25,3.4,2.2],[2.1,3.75,3.2],[1.4,5,7.5],[2.15,3.3,3.5],[1.45,4.75,6.5],[4,4.2,1.75],[1.73,3.8,4.75],[1.6,4.5,5],[2.25,3.4,3.2],[1.8,3.8,4.33],[2.63,3.8,2.4],[1.44,4.5,7.5],[1.8,3.8,4.33],[2.4,3.4,2.88],[6.5,4.75,1.44],[8,5.75,1.33],[2,3.6,3.6],[2,3.5,3.8],[3.2,3.8,2.1],[1.36,5.5,7],[2.3,3.4,3.1],[8,5.75,1.33],[1.22,6.5,13],[2,3.8,3.5],[1.3,5.25,10],[2,3.5,3.75],[1.65,4.2,5],[1.67,4.33,4.5],[2.25,3.4,3.2],[1.5,5,5.5],[2.2,3.6,3.1],[5.75,4.75,1.5],[5,4.2,1.62],[2.9,3.3,2.4],[2.8,3.3,2.5],[1.91,3.75,3.75],[3.4,3.6,2.05],[3.3,3.5,2.15],[9,4.75,1.36],[1.91,4,3.6],[1.45,4.5,7],[1.85,4.2,3.5],[1.25,7,10],[1.83,4,4],[1.14,8.5,15],[3.5,4.33,1.85],[2.2,3.75,3],[2,4,3.3],[1.33,5.75,8.5],[6.5,4.75,1.45],[17,8,1.14],[2.45,3.6,2.7],[1.8,3.8,4.33],[2.05,3.4,3.8],[2.05,3.5,3.5],[3.8,4,1.83],[6,4.33,1.53],[1.62,4.2,5],[2,3.5,3.8],[1.2,7.5,12],[2.2,3.6,3.2],[1.4,5.25,7.5],[2.88,3.5,2.4],[1.4,5.75,6],[1.75,4,4.5],[1.25,6,10],[1.62,4,5.25],[1.75,3.8,4.5],[2.25,3.5,3.1],[4.75,4.33,1.65],[6.5,6,1.36],[1.4,5,7.5],[5.75,4.33,1.55],[2.25,4,2.8],[2.2,4,2.9],[1.85,4,3.8],[2.1,3.4,3.4],[1.22,7.5,11],[2.05,3.75,3.3],[1.95,4,3.4],[3.25,4,2],[1.36,5,8],[1.53,4.5,5.5],[4,3.8,1.83],[1.2,7,13],[2,3.75,3.5],[1.5,4.75,5.75],[5.75,5.25,1.45],[2.1,4,3.1],[1.75,4,4.33],[4.75,4.5,1.62],[4.75,4.75,1.57],[2.55,3.8,2.55],[2.6,3.5,2.6],[2.15,4,2.9],[1.8,4,4],[1.4,5.25,7],[2.3,3.6,2.88],[1.67,4.33,4.5],[1.75,4.2,4.33],[2.3,3.5,3],[1.55,4.33,6],[3.3,3.75,2.1],[5.25,5,1.5],[1.85,4.33,3.6],[2.1,4,3.1],[2.25,3.75,3],[1.4,5,8],[2.3,3.75,2.88],[1.95,3.5,4],[3.2,3.5,2.2],[3,3.5,2.3],[4,4.2,1.75],[2.8,3.3,2.55],[1.7,4,4.5],[2.45,3.75,2.63],[1.29,6.5,8],[2.2,3.6,3.1],[4.75,4.5,1.62],[1.33,6,7.5],[4.2,4.33,1.7],[1.17,8.5,13],[2.8,3.8,2.3],[2.3,4,2.7],[2.88,4.5,2],[1.3,6,9],[1.29,6.25,8.5],[2.1,3.4,3.5],[2.38,3.6,2.8],[3.2,3.5,2.2],[2.6,3.5,2.7],[1.7,4,4.75],[1.33,5.5,7.5],[4,3.5,1.91],[3.6,3.6,2],[1.91,3.6,4],[2.5,3.4,2.75],[1.4,4.75,7.5],[2.55,3.6,2.55],[5,4,1.67],[1.7,4.2,4.33],[4.75,4.2,1.65],[1.4,5,7],[2.7,3.2,2.7],[3.4,3.4,2.15],[1.85,3.75,4],[1.8,4,4],[2.4,3.6,2.75],[4.75,3.8,1.73],[1.5,4,6],[1.6,4.2,5.5],[1.4,4.5,7.5],[1.85,3.6,4],[2.4,3.4,2.9],[2.15,3.5,3.3],[4,3.6,1.91],[2.1,3.6,3.4],[5,3.8,1.7],[3.3,3.5,2.15],[2.05,3.8,3.2],[2,3.6,3.75],[2.7,3.25,2.7],[1.75,4,4.2],[4.2,3.5,1.91],[1.91,3.5,4],[6,4.75,1.5],[1.55,4.5,5.5],[2.1,3.6,3.3],[1.5,4.33,6.5],[4,3.75,1.85],[2,3.6,3.6],[1.85,3.6,4.2],[2.3,3.6,2.9],[1.5,4.75,6],[1.67,4,4.75],[2.15,3.6,3.2],[2.38,3.4,3],[2.6,3.5,2.63],[2.88,3.25,2.45],[2.4,3.3,2.88],[1.73,3.8,5],[2.7,3.5,2.5],[1.62,4.2,5.25],[1.91,3.75,3.75],[3.5,3.4,2.05],[7.5,4.5,1.44],[2.15,3.8,3.1],[2,3.8,3.4],[4,3.5,1.95],[1.73,3.8,4.5],[2.1,3.6,3.4],[3,3.5,2.38],[1.53,4.5,5.75],[2.2,3.25,3.4],[4.75,3.8,1.73],[2.6,3.6,2.55],[1.45,4.75,6],[1.8,3.8,4.33],[1.67,4.2,4.75],[2.25,3.6,3],[3.4,3.6,2.05],[4.5,3.5,1.83],[1.22,6.5,12],[2.4,3.3,3],[3.8,3.8,1.85],[1.8,3.5,4.75],[2.88,3.5,2.4],[2.8,3.5,2.4],[1.33,5.5,8.5],[1.75,3.75,4.5],[4.2,3.3,1.91],[1.67,4,5],[1.57,4.2,5.5],[5.75,4.33,1.53],[2.25,3.75,2.9],[2.5,3.3,2.8],[1.75,4,4.5],[1.57,4,6],[1.25,6,10],[5,3.8,1.7],[2.25,3.5,3.1],[1.67,3.8,5.5],[2.88,3.2,2.55],[2.38,3.2,3.1],[2.2,3.3,3.4],[1.7,4,4.75],[2.05,3.4,3.6],[3.5,3.3,2.15],[5,4.33,1.6],[4.5,4,1.73],[2.1,3.3,3.6],[1.55,4.2,6],[2.9,3.25,2.5],[1.73,4.2,4.33],[2.25,3.4,3.2],[1.45,4.75,6.5],[3.75,3.5,2],[3.8,3.6,1.91],[1.5,4,7.5],[1.95,3.5,4],[2.3,3.4,3.1],[2.1,3.5,3.6],[2,3.6,3.75],[3,3.3,2.38],[1.91,3.6,4],[1.73,3.75,4.75],[1.7,4,4.75],[3.75,3.5,2],[11,5.25,1.3],[1.75,3.6,4.5],[1.62,4.2,5],[2,3.25,4],[1.45,4.5,7.5],[1.91,3.8,3.8],[1.67,3.8,4.75],[1.83,3.6,4.33],[3.5,3.4,2.15],[2.55,3.5,2.7],[1.2,7.5,12],[1.85,3.5,4.33],[5.25,3.5,1.73],[3.5,3.2,2.2],[2.15,3.2,3.75],[2,3.5,3.8],[4.75,3.6,1.8],[1.7,4.2,4.33],[4.5,3.3,1.91],[1.83,3.75,4.2],[2.63,3.2,2.8],[2.55,3.2,2.88],[3.25,3.3,2.25],[3.2,3.5,2.2],[1.4,5,7],[3.8,4,1.83],[1.6,3.8,5.75],[3.3,3.4,2.2],[1.67,4.33,4.5],[3.4,3.6,2.05],[2.3,3.2,3.3],[1.14,8,17],[1.7,4,4.75],[4,3.4,1.95],[4.33,3.75,1.8],[1.6,4,5.5],[1.7,4,4.5],[2.38,3.25,3.1],[1.4,5,7],[1.83,3.75,4.2],[2.9,3.2,2.45],[1.95,3.5,3.8],[3.25,3.25,2.25],[3.6,4,1.85],[2.5,3.4,2.8],[1.4,4.5,9],[2.4,3.6,2.75],[3.6,3.6,2],[2.75,3.2,2.63],[2.9,3.1,2.63],[1.8,3.75,4.33],[3.6,3.6,2],[1.36,5.5,7.5],[6,4.5,1.5],[1.62,4,5.5],[3.4,3.3,2.2],[1.45,4.5,7],[1.4,4.5,8.5],[2.25,3.1,3.5],[1.75,3.5,4.75],[2.45,3.25,3],[2.9,3.4,2.45],[1.4,4.75,7],[1.62,3.8,5.75],[1.62,4.2,5.25],[3.6,3.3,2.15],[3.8,3.3,2.05],[3.75,3.5,2.05],[2.15,3.3,3.4],[3.1,3.4,2.38],[2.3,3.4,3.1],[2.63,3.2,2.8],[1.53,4.33,6.5],[6,4.5,1.5],[1.7,3.8,5],[1.5,4.33,6.5],[1.75,3.7,4.75],[1.53,4.2,6.5],[2.8,3.2,2.63],[2.55,3,3.1],[4,3.4,1.91],[2.6,3.2,2.8],[3.1,3.1,2.45],[2.38,3.5,2.9],[3.1,3.25,2.38],[1.44,4.33,7.5],[4.2,3.4,1.91],[1.45,4.75,7],[1.7,4,4.75],[3.4,3.8,2],[2.7,3.3,2.63],[4.2,3.6,1.85],[3.4,3.2,2.25],[1.6,4,5.75],[2,3.5,3.75],[1.8,3.5,4.75],[1.4,4.75,8],[2.55,3.4,2.75],[1.75,3.6,4.5],[3.3,3.4,2.2],[2.05,3.3,3.8],[1.4,5,7],[2.8,3.1,2.63],[2.25,3.3,3.25],[3.6,3.75,1.95],[2.05,3.4,3.6],[1.5,4.2,7],[2.88,3.2,2.6],[2.25,3.25,3.3],[2,3.4,4],[2.5,3.1,3],[2.6,3.25,2.8],[1.36,5,9],[1.57,4,6],[2.5,3.3,2.88],[6,4.5,1.5],[2.05,3.3,3.8],[5.25,4.2,1.62],[2.05,3.6,3.5],[4.2,3.3,1.95],[3.1,3.4,2.3],[2.55,3.3,2.8],[1.75,3.5,5.25],[3.1,3.5,2.25],[3.25,3.8,2.05],[2,3.4,3.75],[1.53,4,7],[1.18,8,12],[1.53,4,7.5],[1.75,3.8,4.5],[2.5,3.2,2.9],[2.05,3.6,3.5],[1.8,4,4],[3.3,3.25,2.25],[5,3.75,1.7],[2.55,3.25,2.8],[1.8,3.6,4.33],[2.6,3,3],[3.3,3.5,2.15],[2.2,3.25,3.4],[1.53,4.33,5.75],[3,3.3,2.4],[1.36,4.75,9],[2.15,3.2,3.6],[1.6,4,5.75],[1.95,3.75,3.6],[2.7,3.5,2.55],[2.7,3.3,2.55],[1.44,5.25,6],[7.5,5,1.4],[2.25,3.4,3.25],[2.25,3.6,3],[1.95,3.6,3.75],[1.33,5.75,7.5],[4.5,3.75,1.75],[3.75,3.5,2],[2.6,3.4,2.63],[3,3.3,2.38],[2.25,3.3,3.3],[2.55,3.75,2.55],[2.4,3.4,2.9],[2.05,3.8,3.3],[1.44,5,6.5],[2.38,3.2,3.1],[1.3,6,8.5],[3.5,3.6,2.05],[1.73,3.8,4.75],[1.91,3.8,3.8],[1.67,4,5],[1.53,4,6.5],[5.25,4.5,1.55],[1.44,5,6.5],[3.8,4,1.83],[4,3.5,1.91],[1.4,6,5.75],[2.5,3.4,2.8],[2.2,3.6,3.1],[2.5,3.6,2.63],[3.25,3.5,2.15],[4.5,3.6,1.8],[1.44,4.75,6.5],[1.65,4,5],[1.67,4,4.75],[1.42,4.75,7.5],[5.5,4,1.62],[1.38,5,7.5],[2.88,3.3,2.5],[4,3.75,1.9],[1.6,4.2,5.25],[8.5,5.5,1.33],[1.18,7.5,13],[2.63,3.3,2.63],[1.36,5.25,8],[2.45,3.5,2.8],[2.45,3.6,2.75],[2.4,3.4,2.9],[4.1,3.9,1.8],[5,4.33,1.62],[2.5,3.7,2.63],[2.15,3.6,3.2],[1.8,3.75,4.2],[1.08,12,21],[2.55,3.3,2.8],[1.44,4.75,6.5],[4.33,3.8,1.75],[2.9,3.8,2.2],[4.33,4,1.75],[1.27,5.75,11],[1.33,5.5,8.5],[1.75,3.9,4.33],[2.75,3.4,2.55],[3,3.5,2.3],[4.5,4,1.7],[2,3.7,3.7],[7,5.5,1.38],[1.6,4.33,5],[2.5,4,2.5],[3.7,4.2,1.85],[4.5,4,1.7],[1.38,5,7.5],[1.62,4,5.5],[2.38,3.25,3],[1.22,6.5,12],[1.18,8,12],[1.5,4.2,6.5],[3.4,3.8,2],[3,3.5,2.3],[3.4,3.5,2.1],[3.6,3.9,1.95],[1.57,4.2,5.25],[3,3.4,2.4],[2.45,3.4,2.88],[1.3,6.25,9],[2.25,3.5,3.2],[1.55,4.5,5.5],[2.88,3.75,2.3],[1.75,3.75,4.75],[1.8,3.6,4.5],[5.25,4.33,1.6],[1.17,8,15],[2.2,3.5,3.2],[1.73,4.2,4.2],[2.7,3.3,2.63],[2.38,3.3,3],[8,5.75,1.33],[4,3.75,1.85],[2.35,3.75,2.75],[1.65,4.1,5],[6,4.5,1.5],[1.14,9,17],[2.05,3.6,3.4],[3.1,3.75,2.15],[1.25,7,9.5],[1.8,3.8,4.33],[3.2,3.6,2.2],[2.2,3.75,3],[1.48,4.5,6.5],[2.9,4,2.2],[1.5,5,5.25],[2.45,3.5,2.8],[2.38,3.3,3],[1.7,4.2,4.5],[1.95,3.7,3.6],[2.3,3.5,3],[5,3.9,1.65],[8,6,1.33],[1.62,4.1,5],[2.3,3.5,3],[3,3.3,2.4],[1.85,3.9,3.8],[1.65,4.33,4.75],[1.62,4.5,4.5],[1.11,10,17],[2.75,3.25,2.63],[1.73,4.33,4.2],[3.9,4,1.83],[2.88,3.75,2.3],[2.5,3.25,2.9],[3.75,3.75,1.95],[5.5,4.2,1.57],[2.25,3.5,3.1],[1.4,5,7.5],[2.15,3.5,3.4],[2.63,3.4,2.63],[2.5,3.4,2.88],[1.91,4,3.6],[2.6,3.5,2.6],[2,3.7,3.5],[2.5,3.5,2.7],[2.7,3.5,2.55],[2.15,3.4,3.4],[1.91,3.75,3.75],[4.1,4.2,1.73],[1.42,5.25,6.5],[1.38,5.5,6.5],[2.7,3.3,2.7],[1.25,6.5,9],[2.7,3.4,2.55],[6.5,4.75,1.44],[1.38,4.75,9],[1.62,4,5.5],[2.4,3.6,2.8],[2.45,3.4,2.88],[1.62,4,5.25],[1.48,4.75,6],[11,5.75,1.27],[5.25,4,1.62],[1.5,4.5,6],[1.38,5,7.5],[1.65,4.2,4.75],[2.9,3.6,2.3],[1.7,3.8,4.75],[2.8,3.6,2.4],[7,4.5,1.45],[1.7,4.1,4.5],[1.53,4.2,6],[1.7,4.5,4.1],[2.1,3.6,3.3],[3,3.4,2.35],[2.9,3.4,2.38],[2.1,3.4,3.5],[1.36,4.75,9],[4.2,4,1.75],[8.5,5.25,1.33],[1.44,4.5,7],[1.8,3.75,4.33],[2.35,3.6,2.88],[2.63,3.75,2.45],[1.36,5.5,7],[2.88,3.75,2.3],[5.5,4.2,1.57],[1.65,3.9,5.25],[5,4.33,1.6],[3.5,3.75,2],[4.5,3.8,1.73],[3.4,3.9,2],[1.9,3.9,3.75],[1.22,6.5,12],[1.33,5.5,8],[1.3,6,8.5],[1.9,3.8,3.8],[2.63,3.3,2.7],[1.85,3.8,3.9],[1.57,4.5,5],[1.33,6,7.5],[4.33,4.5,1.67],[1.7,4,4.75],[3.25,3.7,2.1],[2.3,3.6,2.9],[4.75,3.75,1.73],[2.88,3.7,2.35],[6.25,4.2,1.55],[5,4.2,1.62],[1.42,4.75,7],[2.55,3.4,2.7],[1.8,3.8,4.2],[4.5,4,1.73],[1.33,5.5,7.5],[1.9,3.8,3.8],[1.48,4.75,6],[1.91,3.8,3.75],[2.3,3.75,2.88],[3.25,3.5,2.2],[3.9,3.7,1.91],[1.08,12,23],[1.62,4.33,4.75],[1.14,9,15],[7.5,5.5,1.36],[1.57,3.9,5.5],[2.6,3.2,2.8],[2.3,3.6,2.88],[1.6,5,4.2],[7,5,1.4],[1.9,3.8,3.6],[6.5,4.75,1.42],[2.75,3.5,2.55],[6.5,4.75,1.44],[2.88,3.8,2.25],[1.33,5.5,8.5],[1.73,3.75,4.75],[3.8,3.75,1.91],[1.3,6.25,7.5],[3,3.4,2.4],[4.33,3.75,1.8],[1.55,4.2,5.75],[1.29,6.25,8],[3.3,3.2,2.3],[4.75,4.2,1.62],[1.48,4.75,6],[3,3.4,2.38],[5.25,4.1,1.62],[3.25,3.2,2.3],[3.9,3.6,1.91],[1.36,5.5,8],[1.4,5.25,7],[3.9,3.7,1.91],[1.29,6,9.5],[1.62,4.2,5],[6.5,5,1.42],[4.33,3.7,1.8],[2.6,3.5,2.63],[1.5,4.1,7],[2.8,3.5,2.45],[2.1,3.6,3.3],[1.38,4.75,8],[7.5,5.25,1.36],[1.36,5.75,6.5],[2.05,3.7,3.4],[1.67,3.75,5.5],[1.08,12,15],[6.5,5.25,1.42],[7,4.5,1.45],[2.05,4,3.3],[2.05,3.75,3.3],[1.45,5.5,5.5],[1.53,4.33,5.75],[2.3,3.4,3.1],[2.38,3.5,2.8],[4.5,4.33,1.67],[1.75,3.75,4.5],[1.95,3.6,3.8],[1.7,4,4.75],[3.3,3.6,2.1],[2.1,3.9,3.2],[2,3.5,3.8],[1.95,3.5,4],[1.36,4.75,8],[7.5,4.5,1.44],[2.7,3.6,2.45],[8.5,5,1.33],[1.4,4.75,7],[2.2,3.4,3.3],[1.95,4.2,3.3],[6,4.5,1.5],[2.35,3.6,2.88],[1.8,3.4,5],[1.15,8,12],[2.45,3.75,2.62],[3.9,4,1.83],[3.6,3.8,1.91],[2.5,3.2,2.9],[1.27,6,10],[1.53,4.5,5.5],[2.05,3.4,3.7],[4.1,3.6,1.9],[6,4.1,1.55],[2.63,3.4,2.6],[1.8,3.8,4.2],[2.88,3.8,2.25],[2,3.8,3.3],[2.45,3.4,2.8],[2.63,3.3,2.63],[1.17,8,13],[2,3.7,3.5],[1.53,4.33,6],[3.9,3.6,1.95],[3.25,4,2],[1.5,4.5,5.75],[1.62,4.2,5],[4,3.75,1.85],[1.95,3.6,3.75],[1.45,4.75,6.25],[1.1,9,19],[2.2,3.8,2.9],[2.6,3.1,2.88],[1.18,8,12],[2.7,3.9,2.35],[5.75,3.5,1.7],[3.25,3.4,2.2],[2.05,3.2,3.9],[3.75,3.5,2],[1.67,4.33,4.5],[3.7,3.4,2],[1.73,4.2,4.2],[1.8,3.6,4.5],[2,3.75,3.6],[4.5,3.5,1.83],[1.48,4.33,7],[2.5,3.2,2.9],[2.3,3.4,3.1],[1.36,5.25,7.5],[2.05,3.8,3.25],[1.2,8,10],[1.73,4.5,4],[5.75,3.8,1.62],[1.36,5,8],[1.65,4.5,4.5],[5.25,3.25,1.75],[2.35,3.6,2.8],[2.7,3.25,2.63],[3,3.5,2.3],[1.95,3.6,3.7],[3.2,3.6,2.15],[4.5,3.5,1.83],[1.38,5.5,6.5],[3.4,3.6,2.1],[6.5,4.2,1.48],[1.5,4.75,5.75],[1.29,6,10],[2.1,3.3,3.7],[6,4.2,1.55],[1.6,4.33,5],[1.27,7,8.5],[1.3,6,8],[2.2,3.6,3.1],[1.65,4.2,4.75],[2.15,3.5,3.3],[1.67,3.9,5],[2.4,3.75,2.63],[2.45,3.6,2.63],[3.7,3.6,1.91],[1.48,4.33,6.5],[2.3,3.6,2.75],[2.7,3.7,2.35],[8,4.5,1.4],[2,3.6,3.6],[11,6.25,1.22],[2.45,3.6,2.63],[1.8,4.1,3.9],[1.4,4.75,7.5],[1.55,4,6],[1.67,4.2,4.75],[1.18,7.5,13],[5.25,4,1.6],[1.5,4.2,6.25],[1.67,4,4.5],[1.25,6,11],[2.15,3.5,3.25],[1.4,4.75,7.5],[1.77,3.75,4.5],[1.45,4.33,6.5],[2.3,3.6,2.88],[2.05,3.7,3.4],[1.65,4.1,4.75],[2.88,3.7,2.3],[2.1,3.7,3.25],[2.15,3.7,3.1],[2.25,3.4,3.2],[1.82,3.4,4.5],[5,4,1.65],[11,7.5,1.2],[2.7,3.5,2.5],[2.4,3.6,2.75],[2.1,3.75,3.1],[1.9,3.6,4],[1.33,5.25,8],[2.63,3.6,2.5],[2,3.6,3.6],[1.3,6,8.5],[1.44,5,6.25],[1.4,4.75,7.5],[2.75,3.3,2.55],[1.91,3.9,3.6],[2.3,3.6,2.9],[1.95,3.7,3.7],[2.6,3.75,2.45],[2.25,3.3,3.2],[1.55,4.33,5.75],[1.33,5.25,8.5],[5,4.2,1.6],[3,3.8,2.2],[1.4,6,5.75],[4.33,4.2,1.7],[1.33,5.5,8.5],[3,3.75,2.2],[8.5,6,1.3],[4.2,4.33,1.7],[2.7,3.7,2.45],[1.48,4,8],[2.35,3.4,3],[2,3.2,4.1],[2.8,3.25,2.63],[1.85,3.3,4.5],[4.75,3.8,1.73],[1.57,3.75,7],[8,4.2,1.45],[2.38,3,3.4],[3.3,3.7,2.1],[2.1,3.4,3.6],[2.4,3.6,2.8],[2.45,3.1,3.1],[1.62,4.2,5],[3.9,3.2,2.05],[2.45,3,3.2],[1.18,7.5,15],[2.25,3,3.6],[2.38,3.1,3.25],[1.6,4.1,5.5],[1.91,3.4,3.8],[2.38,3.1,3.25],[5.25,3.8,1.62],[1.62,3.9,5.75],[2.3,3,3.6],[1.3,5.25,11],[1.7,3.5,5.75],[1.7,4,4.33],[8,5,1.38],[1.25,6.25,10],[3,3.3,2.38],[2.8,3,2.8],[2.5,3,3.2],[2.8,3.4,2.45],[1.95,3.4,4],[2.45,3.25,3],[2.35,3.8,2.75],[3.5,2.9,2.38],[1.29,5.75,9.5],[1.62,3.7,6.25],[2.45,3.4,2.88],[2.63,3.2,2.8],[2.2,3,3.7],[4.75,3.9,1.67],[1.67,3.75,5.5],[4.2,3.8,1.8],[3.8,3.4,2],[1.33,4.5,11],[2.05,3.1,4],[2.9,2.75,3],[1.91,3,5],[3.75,3.2,2.05],[2.15,3.1,3.7],[3.9,3,2.2],[1.9,3.4,4.2],[2.88,3.3,2.5],[1.17,7,19],[2.05,2.8,4.75],[1.7,3.7,5.25],[3.9,3.9,1.85],[5,3.4,1.8],[1.85,3.3,4.75],[1.65,3.8,5.5],[2,3.1,4],[1.2,6.5,13],[1.73,3.7,4.5],[1.25,6.25,10],[3.25,3.5,2.15],[3.1,3.1,2.38],[3.8,3.7,1.91],[3,2.9,2.63],[2.55,2.88,3.1],[1.9,3,5],[1.85,3.25,4.75],[7,4.5,1.45],[2.1,3.6,3.25],[1.7,3.7,5],[1.65,3.4,5.75],[2.8,3.3,2.5],[1.45,4.33,6.5],[2.9,2.88,2.8],[3.1,3,2.55],[2.2,2.9,3.9],[3.1,3.5,2.25],[3.1,3,2.5],[1.27,6.25,8.5],[2.35,3.3,3.1],[5.25,4.5,1.57],[2.45,3.2,3],[3.3,3.2,2.3],[1.62,3.9,5.75],[1.45,4.2,7.5],[2.5,3.4,2.7],[2.4,3.4,2.88],[4.75,4.5,1.6],[2.05,3.1,4],[1.33,4.75,10],[1.67,3.8,5],[1.3,5.75,8],[1.62,3.8,5.5],[3,3.25,2.4],[3.5,3.75,2],[2.25,3.1,3.5],[2.88,3.4,2.45],[2,4.1,3.25],[3.25,3.25,2.3],[2.1,3.1,3.8],[3.1,3.4,2.3],[1.75,3.6,5],[2.9,3.1,2.55],[2.25,3,3.4],[1.6,3.7,6.25],[1.7,3.5,5.5],[1.27,6,9.5],[1.13,9,19],[2.9,3,2.63],[1.91,3.5,4],[1.95,3.2,4.5],[1.83,3.4,4.5],[1.2,7,13],[1.62,4,5.5],[2.88,3.2,2.55],[1.95,3.4,4],[3.6,3.1,2.2],[2.45,3.2,3],[4.5,3.4,1.85],[4.75,4.1,1.65],[1.65,3.4,6.5],[3,3,2.6],[1.36,4.75,9],[1.67,3.9,5.25],[2.8,3,2.7],[4.75,4.33,1.65],[2.55,3.4,2.75],[2.3,3.2,3.3],[7.5,4.5,1.42],[2.25,3,3.6],[2,3,4.5],[1.17,8.5,13],[1.8,3.4,5],[3.3,3.4,2.2],[6,4.2,1.53],[1.83,3.7,4.2],[1.36,4.5,10],[2.8,3.1,2.7],[1.8,3.6,4.5],[2.1,3.4,3.5],[5.75,4.33,1.53],[3.2,3.3,2.25],[1.85,3.4,4.5],[1.8,3.6,4.5],[5,4.5,1.57],[2.25,2.9,3.75],[4.5,3.9,1.73],[4.75,3.1,1.91],[1.95,3.6,3.8],[2.05,3.3,3.75],[1.38,4.75,8.5],[1.8,3.1,5.75],[3.1,3.1,2.38],[2.75,3.2,2.6],[2.3,3.1,3.25],[2.2,3.25,3.3],[6,3.8,1.57],[1.4,4.33,9],[3.6,3.1,2.15],[1.4,4.33,8],[1.75,3.8,4.33],[1.13,8,19],[2.6,3,3],[1.8,3.6,4.5],[1.38,5,8],[2.3,2.75,3.9],[2.9,3.1,2.6],[3.9,3.1,2.1],[1.9,3.8,3.9],[2.25,3.1,3.5],[1.33,5.5,9],[1.85,3.6,4.33],[4.2,3.4,1.91],[1.8,3.5,4.75],[7,4.5,1.42],[2.75,3.1,2.7],[2.75,3.1,2.75],[4.5,3.5,1.83],[2.1,3,4],[2,3.3,4],[2.45,2.9,3.3],[1.33,5,10],[2,3.3,4],[1.75,3.4,5.25],[1.91,3.5,4],[7,4,1.5],[1.75,3.6,4.75],[6.5,4.2,1.5],[2.8,3.2,2.6],[1.14,7.5,17],[2.15,3,3.8],[3.1,3,2.55],[1.73,3.5,5.25],[2.5,3.1,3],[2.25,3,3.5],[1.7,4,4.75],[1.7,3.8,4.75],[10,6,1.27],[2.75,2.9,2.88],[1.75,3.4,5.5],[1.38,5,7.5],[1.22,7.5,10],[2.63,3,3],[3.3,3,2.38],[2.45,2.9,3.25],[1.22,7,10],[1.4,4.33,8.5],[9,5.75,1.3],[1.2,7.5,13],[2.3,3.1,3.25],[3,3,2.55],[2.9,3.3,2.45],[1.6,4.2,5],[1.5,4.1,7],[2.25,3.4,3.2],[1.65,4,5],[4.75,3.9,1.7],[1.85,3.6,4.2],[2.3,2.9,3.6],[1.73,3.4,5.5],[1.6,3.9,5.75],[5.25,4.5,1.55],[2,3,4.33],[1.95,3.25,4.33],[3.1,2.9,2.6],[5.75,4.1,1.57],[1.39,4.5,8],[1.5,4.5,5.5],[5.5,3.4,1.73],[4,3.4,1.95],[1.73,3.5,5.25],[2.55,3.1,2.9],[1.22,7,11],[1.67,3.75,5.25],[1.8,3.25,5.25],[2.88,3.5,2.38],[4.2,3.4,1.91],[8.5,7,1.25],[1.17,7,19],[1.29,6.25,8.5],[2.6,3.1,2.9],[1.55,3.75,7],[2.05,3.2,3.9],[3.1,3.2,2.4],[2.2,3.5,3.25],[2.3,3.2,3.3],[4.33,4,1.73],[2.05,3.5,3.6],[3.1,2.88,2.6],[1.25,5.75,12],[2.25,3.1,3.5],[2.3,3.2,3.3],[1.55,3.8,7],[3.1,3.25,2.38],[1.38,4.5,9],[4.5,3.1,1.95],[1.29,5.75,9.5],[1.62,3.7,6],[1.42,4.5,7.5],[2.2,3.2,3.5],[3.1,3.2,2.4],[2.88,3,2.75],[5,3.8,1.63],[1.77,3.3,5],[3.1,3.75,2.15],[1.92,3.5,3.9],[3.8,3.3,2.05],[2.9,3.2,2.5],[2.25,2.88,3.8],[2.5,3,3.1],[3.1,3.6,2.2],[1.29,7,7],[1.33,4.75,11],[5.5,3.75,1.62],[2.15,2.9,4.1],[1.14,8,17],[3.25,3.1,2.35],[1.25,6.5,10],[1.45,4.1,7],[2.15,3.1,3.75],[1.83,3.5,4.33],[1.57,4.1,5.5],[1.65,3.5,6],[2.05,3.4,3.6],[1.3,5.75,8.5],[2.63,3.2,2.8],[1.36,5.5,7],[3.2,3.2,2.35],[3.5,3.2,2.2],[4.75,3.1,1.9],[2.2,3.3,3.25],[2.7,3.1,2.75],[2.3,3.1,3.4],[1.75,3.4,5.5],[1.75,3.3,5.5],[1.62,3.7,6],[8.5,6,1.3],[2.45,3.2,3.1],[5.25,4.1,1.62],[2.35,3.3,3.1],[1.75,3.4,5.5],[1.14,8,19],[2.88,2.63,3],[2.25,3,3.4],[1.3,5.75,8],[1.85,3.1,5],[5.75,4.2,1.55],[4.5,3.4,1.83],[1.7,3.7,5],[2,3.1,4.2],[1.65,3.9,5.25],[2.88,3.3,2.45],[1.95,3.3,4.1],[1.2,7,13],[1.36,5.25,7],[2.5,3.4,2.8],[2.35,3,3.4],[4.75,3.6,1.75],[2.75,3.1,2.75],[2.5,3,3.2],[1.53,4,6.5],[1.2,7,13],[1.44,5,6.25],[2.38,3,3.4],[3.7,3.1,2.15],[1.53,4.2,6],[2.63,3.3,2.7],[15,8,1.14],[1.33,5.75,7],[1.77,3.5,4.75],[3.3,3,2.38],[2.55,3,3],[2,3.1,4.2],[2.45,3.25,3],[2,3,4.33],[1.8,3.6,4.5],[3.1,3.8,2.1],[1.33,5.25,9],[1.67,3.7,5],[2.4,3,3.2],[1.9,3.7,3.2],[1.8,2.9,4.5],[1.62,3.75,5.75],[4.75,3.9,1.73],[2.3,3.3,3.1],[1.67,3.7,5.25],[2.1,3.1,3.7],[1.33,5.75,8],[1.38,5.25,7],[3,3.2,2.4],[3.6,3.3,2.1],[9,5.75,1.3],[3.2,2.75,2.63],[1.91,3.6,3.8],[1.83,4.1,3.75],[1.75,3.9,4.33],[2.9,3.5,2.35],[2,3.2,4.2],[1.8,3.3,4.75],[4.2,4,1.75],[2.05,3.1,4.1],[2.2,3,3.8],[6,3.75,1.6],[1.91,3.75,3.75],[1.42,5,6.5],[1.38,4.75,8],[1.3,5.5,9.5],[3.2,3.2,2.35],[4.1,3.75,1.85],[1.53,4.2,6.25],[3.8,3.75,1.91],[1.48,5,6],[3.2,3.75,2.1],[6.5,4,1.53],[3.5,3.2,2.2],[2.5,3.2,3],[1.62,3.8,5.75],[1.91,3.4,4.33],[4.75,3.6,1.75],[4.1,3.4,1.95],[1.48,4.1,7.5],[4.2,3.7,1.85],[1.33,5,9.5],[4.75,3.9,1.7],[3.3,3.1,2.35],[1.2,7,13],[2.6,3.1,2.88],[1.42,4.75,7],[3.2,3.1,2.38],[1.9,3.5,4.1],[1.5,4.33,6.5],[2.1,3.4,3.4],[5.25,3.75,1.67],[3.4,3.3,2.2],[1.57,4.33,5.5],[1.62,3.75,6],[2.25,3.2,3.4],[2.9,3.4,2.4],[1.48,4.33,7],[1.67,3.9,5],[2,3.3,4],[1.75,3.6,5],[2.05,3.4,3.75],[3,3.25,2.45],[5.25,3.6,1.7],[1.3,5.75,9],[3.25,3.3,2.25],[1.8,3.6,4.5],[1.8,3.5,4.75],[4.33,3.75,1.8],[8,4.75,1.4],[2.25,3.4,3.2],[1.62,3.8,6],[2.15,3.4,3.4],[2.7,3,2.8],[3.25,3.2,2.35],[2.2,3.4,3.3],[2.2,3.5,3.25],[2.25,3.4,3.2],[3.3,3.1,2.4],[1.62,4.2,5.25],[1.65,4,5.25],[1.44,4.5,7],[1.33,5.75,8],[7,4.33,1.48],[5.5,3.5,1.7],[3,3.3,2.4],[2.9,3.1,2.55],[2.1,3.4,3.6],[1.4,4.75,8],[3.4,3.3,2.2],[1.36,5,8.5],[2.1,3.6,3.4],[1.45,4.33,7],[2.5,3.2,2.9],[2.2,3.3,3.3],[1.45,4.75,6.5],[1.3,5,11],[1.38,5,8],[1.8,3.7,4.33],[1.57,4,6],[4.2,3.4,1.91],[3.1,3.6,2.2],[1.95,3.6,3.8],[3.75,3.1,2.15],[1.38,4.75,8.5],[2.05,3.3,3.8],[6,3.5,1.67],[3.2,3.3,2.3],[5.5,4,1.62],[2.8,3.1,2.7],[4.2,3.7,1.85],[2.3,3,3.5],[2.2,3.3,3.3],[2.63,3,2.9],[1.25,6,12],[1.38,4.75,8],[2.15,3.3,3.5],[1.53,4.2,6.25],[2.15,3.25,3.6],[1.72,3.5,5],[2.55,3.4,2.75],[3,3.25,2.35],[2.25,3.25,3.25],[2.45,3.4,2.8],[7.5,4.33,1.44],[2.7,3.25,2.65],[1.3,5,10],[1.4,4.75,8],[4.2,3.9,1.8],[2.88,3.3,2.45],[1.7,3.8,5],[1.62,3.5,6.5],[4.2,3.2,1.95],[5,3.6,1.7],[2.05,3.4,3.7],[3.2,3.3,2.25],[5,3.5,1.8],[1.17,7,15],[2.7,3.1,2.63],[1.85,3.4,4.33],[1.5,3.75,7.5],[2.88,3.3,2.45],[2.4,3,3.3],[2.55,3.4,2.7],[5.5,4.1,1.6],[1.57,3.8,6.5],[1.38,5,7.5],[1.44,4.5,7],[2.05,3.4,3.6],[4.1,3.8,1.83],[1.85,3.7,4.1],[7,5.25,1.38],[2.15,3.3,3.5],[5,4.2,1.62],[2.63,3.1,2.9],[3.3,3.1,2.3],[2,3,4.33],[1.73,3.6,5],[1.9,3.5,4.2],[2.8,2.9,2.8],[2.3,3.25,3.2],[1.91,3.4,4.1],[2,3.25,3.9],[1.36,4.75,9],[1.65,3.9,5.25],[2,3.3,4],[4.2,3.8,1.8],[5,3.4,1.8],[5.25,3.6,1.7],[3.2,3.5,2.2],[1.18,7,15],[2.15,3.4,3.3],[2.5,3.1,3],[1.7,3.6,5.25],[1.57,4,6.25],[1.5,4.5,6],[2.63,2.75,3.25],[2.75,3.3,2.6],[1.9,3.4,4.33],[2.7,3,2.88],[2.7,2.88,3],[5.5,4.33,1.55],[5.25,3.5,1.73],[1.3,5.25,9],[2.45,3,3.2],[2.7,3.1,2.75],[1.85,3.75,4],[3.25,3.4,2.2],[1.33,5.25,8],[3.6,3.4,2.1],[5.5,4.1,1.57],[3.3,2.9,2.45],[5.25,3.6,1.7],[5,3.6,1.73],[1.53,4.2,6.25],[2.5,3.3,2.88],[1.29,5.5,11],[6.25,3.5,1.65],[1.6,3.8,6],[1.2,6.5,15],[2.55,2.9,3.1],[2.3,3.5,3],[6.5,4.75,1.44],[3,3.3,2.4],[2.25,3.1,3.5],[1.27,5.5,11],[1.95,3.3,4.2],[2.25,3.4,3.2],[1.7,3.7,5],[1.5,4.1,7],[2.3,3.1,3.4],[2.88,3.25,2.55],[3,3,2.55],[2.4,3.25,3],[2.63,3,2.9],[1.85,3.4,4.5],[2.55,3.1,3],[1.9,3.4,4.2],[2,3.1,4.33],[5.25,3.8,1.65],[5,3.2,1.8],[1.33,5,9.5],[1.91,3.5,4],[11,5.25,1.29],[2.8,3.2,2.6],[1.25,5.5,13],[4.2,3.5,1.85],[4.2,3.5,1.9],[2.1,3.25,3.7],[1.48,4.2,7],[1.5,4.1,6.5],[1.6,3.75,6],[2.15,3.3,3.4],[2.25,3.25,3.25],[1.73,3.4,5.5],[1.95,3.3,4.1],[2.15,3.7,3.1],[5,3.5,1.75],[1.25,5.75,13],[2.15,3.4,3.4],[2.2,3.2,3.6],[4.2,3.6,1.85],[2.15,3.1,3.8],[3.8,3.3,2],[1.3,6,8.5],[3.3,3.3,2.25],[9.5,5.25,1.33],[2,3.5,3.8],[2.15,3.5,3.25],[2.25,3,3.6],[2.15,3.4,3.5],[2.3,3,3.5],[1.83,3.4,4.5],[1.42,4.5,7.5],[1.9,3.5,4.2],[1.36,4.75,9],[1.65,3.9,5.25],[4,3.5,1.91],[3.1,3.2,2.38],[3.9,3.4,2],[3.6,3.5,2.05],[3.7,3.4,2.05],[6.25,4.1,1.53],[5.5,3.8,1.65],[2.2,3.1,3.6],[5,3.7,1.73],[1.85,3.6,4.1],[1.38,4.75,8.5],[4.2,3.5,1.91],[1.44,4.5,7.5],[1.48,4.75,6.5],[1.8,3.4,5],[1.44,4.75,6.5],[2.63,3.2,2.8],[1.33,4.75,9.5],[2,3.5,3.75],[2.7,3.2,2.7],[1.8,3.5,4.75],[3.6,3.5,2.05],[3.4,3.2,2.25],[1.85,3.4,4.5],[3,3,2.6],[4,3.5,1.91],[5,4,1.67],[3.9,3.3,2],[1.27,5.25,13],[3.6,3,2.25],[4.33,3.4,1.9],[6.25,3.9,1.57],[4.1,3.5,1.9],[1.33,4.75,11],[2.88,3.3,2.5],[1.75,3.4,5],[1.2,6.5,15],[3.1,3.2,2.38],[1.8,3.6,4.5],[4.1,3.3,1.95],[1.57,3.75,6.5],[1.91,3.1,4.75],[1.87,3.6,4],[2.05,3.6,3.5],[1.3,5,12],[2.45,3,3.2],[1.57,3.8,6.5],[3,3.25,2.4],[4.75,3.6,1.75],[1.14,7,21],[5.25,3.3,1.75],[1.55,4,6.25],[3.9,3.3,2],[2.5,3.25,2.88],[1.73,3.5,5.25],[2.15,2.9,4.2],[3.1,3,2.45],[1.73,3.5,5],[1.8,3.6,4.5],[1.8,3.3,5],[5.75,4.33,1.53],[2.4,3.1,3.25],[1.55,4.2,5.75],[3.4,3.2,2.25],[2.55,3.3,2.8],[1.75,3.3,5.25],[5,3.5,1.75],[1.53,3.9,7],[4.75,3.5,1.75],[1.67,3.5,5.5],[3.75,3.3,2.05],[1.4,4.33,8.5],[1.91,3.7,3.75],[2.4,3.1,3.1],[1.75,3.3,5.25],[2.45,2.88,3.4],[5,3.8,1.7],[6.5,4.5,1.48],[1.9,3.5,4.2],[2.3,3.1,3.4],[2.45,3,3.1],[1.8,3.2,5.25],[1.7,3.8,5],[2.5,3.1,3],[2.9,3,2.7],[4,3.6,1.91],[1.73,3.6,5],[1.33,5.25,8],[1.33,4.5,10],[1.95,3.5,3.9],[1.73,3.8,4.75],[3,2.9,2.63],[1.91,3.5,4.1],[2.8,3.2,2.63],[1.33,5,9.5],[3.75,3.3,2.05],[13,5,1.29],[1.4,4.5,8.5],[2.25,3,3.6],[3.4,3.1,2.3],[2.5,3.4,2.75],[3.1,3.1,2.45],[3.3,3.2,2.3],[4.75,3.6,1.75],[2.4,2.9,3.3],[1.85,3.4,4.75],[4.75,4,1.7],[1.83,3.5,4.5],[1.73,3.8,4.75],[1.2,7.5,12],[1.25,6,11],[1.42,4.33,8],[4.5,3.5,1.85],[1.53,4.5,5.75],[2.5,2.75,3.5],[2.5,2.88,3.25],[2.2,3.2,3.5],[3.1,3.3,2.3],[7,3.8,1.55],[1.3,5.25,10],[4.33,3.6,1.83],[13,6,1.22],[1.65,3.7,5.5],[2.4,3.1,3.2],[4.75,3.7,1.8],[2.3,3.4,3],[1.73,3.8,4.75],[2.45,3.2,3],[2.15,3.3,3.5],[1.48,4.2,7],[2.15,3,3.75],[5.75,4,1.57],[1.3,5.25,11],[3.1,3.2,2.38],[1.95,3.6,3.75],[4.5,3.9,1.75],[2.6,3,3],[2.75,3,2.75],[1.62,4.2,5],[1.38,4.75,8.5],[1.83,3.4,4.6],[5,3.6,1.73],[6.25,4.2,1.5],[2.3,3.6,2.9],[3.5,3.3,2.15],[5,4.2,1.65],[1.2,7,12],[1.5,4.5,6],[1.22,7,11],[1.75,3.5,5],[1.95,3.2,4.33],[1.53,3.7,7.5],[5.5,4.2,1.57],[3.7,3.6,2],[5.75,4.33,1.53],[5.25,4.5,1.55],[2.2,3.6,3.1],[3.5,3.6,2.05],[1.65,4.5,4.5],[2,3.4,3.9],[1.25,7,9],[1.7,4.1,4.5],[6.25,4.75,1.45],[2.1,3.5,3.4],[1.91,3.5,4.1],[2.6,3.6,2.6],[1.8,4.2,3.9],[3.2,3.7,2.15],[1.62,4.33,5.25],[4.1,4,1.8],[1.75,4.2,4.1],[2.38,3.5,2.9],[1.2,8,11],[1.4,5.5,6.5],[1.7,3.9,5],[5.75,4.5,1.48],[2.75,4,2.3],[1.48,4.5,6.5],[2.63,3.6,2.5],[11,7,1.22],[2.1,3.6,3.4],[2,3.7,3.5],[2.38,3.5,2.9],[1.91,3.5,4],[2.7,3.5,2.55],[2,3.6,3.7],[8,5.5,1.36],[1.75,4,4.33],[1.3,5.75,8],[2.3,3.75,2.9],[5.75,3.9,1.62],[1.25,7,9],[1.62,4,5.5],[1.83,3.75,4.2],[2.1,3.5,3.4],[1.4,5.25,6.5],[3.2,3.9,2.05],[1.73,4.33,4.2],[4.2,4.2,1.73],[2.38,3.8,2.7],[2.38,3.7,2.7],[3,3.7,2.2],[1.09,11,21],[3.3,3.5,2.15],[2.6,3.5,2.6],[2.4,3.3,2.9],[4.5,4.33,1.67],[5.5,4.5,1.53],[1.3,6,8],[1.3,5.25,9.5],[1.73,3.75,4.75],[1.7,4.5,4.2],[1.44,4.75,6.5],[3.9,3.8,1.85],[1.85,3.7,4.1],[1.36,5.25,7.5],[3.5,3.3,2.15],[2.1,3.6,3.3],[2.3,3.75,2.8],[3.6,4,1.9],[1.73,4.1,4.5],[2.55,3.5,2.63],[1.22,7.5,9.5],[5.25,5,1.5],[12,9.5,1.17],[2.55,3.3,2.75],[2.25,3.5,3.1],[1.55,4.75,5.25],[1.18,7.5,13],[1.33,5.75,7.5],[1.83,3.8,4],[2.7,3.5,2.45],[2,3.75,3.5],[2.2,3.8,3],[1.7,3.9,4.75],[2.1,3.8,3.2],[2.45,3.25,2.9],[9.5,6.5,1.27],[3.5,3.6,2],[9,7,1.25],[1.62,4.33,4.75],[1.57,4.33,5.25],[2.05,3.75,3.25],[1.9,4,3.7],[2.75,3.4,2.45],[1.13,10,15],[1.67,4.2,4.5],[3.4,3.5,2.1],[1.2,6.5,15],[1.29,6,9],[2.3,3.3,3.2],[1.7,4.1,4.5],[3.1,3.4,2.3],[1.8,3.8,4.2],[1.67,3.75,5.25],[1.73,4,4.5],[1.95,3.8,3.6],[1.7,4,4.75],[4.75,3.7,1.75],[3,3.75,2.2],[4.75,4.1,1.67],[2.1,3.4,3.5],[3.7,3.7,1.95],[1.8,3.6,4.5],[1.1,11,19],[3.2,3.5,2.2],[1.53,4.1,6.25],[5.75,4.2,1.57],[1.25,6.5,10],[3.2,3.75,2.1],[2.15,3.3,3.5],[2.7,3.4,2.55],[2.2,3.3,3.3],[5.75,4,1.57],[6.5,4.5,1.48],[1.44,4.75,6.5],[1.6,3.8,6],[2.63,3.4,2.63],[4,4,1.8],[1.44,5,6],[2.05,4,3.2],[1.2,7.5,11],[1.83,4,3.9],[2.3,3.6,2.9],[3,3.4,2.35],[1.45,4.75,6.5],[2.05,3.3,3.75],[1.38,5,7.5],[2.3,3.5,3],[3.1,3.6,2.2],[2.7,3.6,2.45],[1.4,4.75,7.5],[3.1,3.3,2.3],[2.35,3.6,2.88],[1.53,4.33,5.75],[3.7,3.5,2.05],[7,5,1.4],[1.75,4,4.2],[3.6,3.6,2],[5.25,4.5,1.55],[1.7,4.2,4.33],[1.36,5.25,7.5],[1.91,3.8,3.75],[2.6,3.25,2.75],[1.13,9,17],[1.95,3.9,3.4],[1.83,3.5,4.5],[1.6,4.2,4.75],[2.55,3.6,2.63],[1.17,7.5,15],[3.7,3.6,2],[2.38,3.5,2.8],[3,3.4,2.35],[1.65,4.5,4.5],[1.27,5.75,11],[2.55,3.2,2.88],[1.85,3.8,4],[1.42,5,7],[1.82,3.6,4],[1.62,4.33,4.75],[7.5,5.75,1.33],[2.8,3.5,2.45],[3.7,3.9,1.9],[1.73,4,4.5],[3.1,3.6,2.2],[2.55,3.1,3],[2.25,3.3,3.2],[1.05,17,26],[2.8,3.4,2.5],[4.33,3.9,1.75],[2.35,3.3,3.1],[1.57,4.5,5],[3.1,3.5,2.25],[1.95,3.8,3.6],[1.25,7,9.5],[1.1,11,17],[1.85,3.8,3.9],[1.7,3.75,4.75],[2.2,3.5,3.2],[1.75,3.5,5],[4.33,3.6,1.8],[2.63,3.5,2.55],[2.25,3.5,3],[1.57,4.2,5.25],[2.9,3.3,2.4],[5,3.9,1.67],[2.5,3.25,2.88],[1.73,4.2,4.2],[2.2,3.5,3.1],[2.9,3.7,2.25],[1.85,3.8,3.9],[1.33,5.75,7.5],[3.6,3.5,2.05],[2,3.5,3.75],[11,6,1.25],[1.8,3.5,4.75],[1.85,3.75,4],[1.53,4.2,6],[1.53,4.5,5.5],[1.33,5,8.5],[1.3,6.5,7.5],[3.5,3.9,1.95],[4.75,4.2,1.65],[2.4,3.6,2.8],[3.1,3.5,2.25],[1.95,3.7,3.75],[4.1,3.8,1.83],[2.63,3.4,2.6],[4.75,3.75,1.73],[1.57,4.33,5.25],[2.63,3.25,2.7],[2.6,3.3,2.7],[1.11,9.5,19],[1.53,4.33,5.75],[5.75,4.33,1.53],[1.27,5.75,11],[1.75,3.5,5],[2.55,3.3,2.7],[1.73,4,4.5],[1.75,4,4.33],[2.25,3.25,3.3],[2.55,3.3,2.75],[1.95,3.3,4.1],[8.5,5,1.36],[2.35,3.6,2.8],[2.38,3.6,2.88],[3.1,3.6,2.2],[2,3.5,3.75],[3.1,3.4,2.3],[1.22,6.5,12],[1.14,8,15],[2.35,3.3,3.1],[3.2,3.9,2.05],[2.88,3.7,2.3],[1.67,3.75,5],[2.5,3.8,2.5],[2,3.5,3.7],[1.62,3.9,5],[7.5,4.75,1.42],[3.1,3.7,2.15],[3.1,3.5,2.2],[6.5,4.75,1.44],[1.45,4.5,7],[1.55,4.2,5.5],[2.63,3.5,2.5],[2.5,3.3,2.75],[2.45,3.3,2.88],[2.88,3.75,2.3],[2.5,3.4,2.8],[2.7,3.5,2.55],[3.25,3.3,2.25],[1.33,4.75,9.5],[2.15,3.6,3.25],[1.44,5.25,6],[1.65,4.33,4.5],[1.73,4.2,4.2],[1.91,3.7,3.75],[9,6,1.29],[2,3.6,3.6],[1.33,5.75,7.5],[1.73,4.1,4.33],[2.8,3.4,2.45],[2.55,3.3,2.75],[1.42,5.25,6.5],[5.25,3.8,1.67],[1.48,5,5.75],[1.22,7,11],[4.1,4.33,1.73],[3.1,3.8,2.15],[1.36,5,8.5],[2.35,3.5,2.88],[2.15,3.8,3],[2.25,3.4,3.1],[1.85,3.6,4],[2.25,3.6,3.1],[2.1,4,3],[4.5,4.33,1.62],[2.62,3.5,2.55],[2.7,3.4,2.55],[1.33,5.75,7.5],[1.83,3.9,4],[3.2,3.4,2.25],[2.35,3.5,2.9],[2.2,3.6,2.9],[2.9,3.6,2.3],[3.1,3.75,2.15],[2.25,3.3,3.3],[2.35,3.7,2.8],[1.17,9.5,11],[2.7,3.9,2.35],[1.53,4.33,5.75],[1.55,4.33,5.75],[2.1,3.5,3.4],[1.09,12,19],[2.35,3.7,2.8],[2.3,3.8,2.75],[5,5.25,1.5],[2.15,3.9,3],[2.2,4.2,2.8],[2,4.2,3.2],[1.67,4.2,4.5],[7,4.75,1.42],[3,3.3,2.4],[3.3,3.4,2.2],[1.48,4.5,6.25],[3.1,3.25,2.35],[5.75,3.8,1.62],[2,3.3,3.75],[2.1,3.3,3.7],[2.35,3.5,2.9],[1.25,7,10],[2.5,3.8,2.6],[1.36,4.75,9],[2.1,3.4,3.5],[1.8,3.7,4.5],[2.25,3.3,3.25],[1.85,3.4,4.5],[3.1,3.5,2.25],[1.53,4.5,5.5],[1.85,3.75,4],[1.8,3.8,4.33],[2.25,3.4,3.2],[3.8,3.8,1.9],[1.85,3.9,3.9],[4,3.3,2],[2.75,3.3,2.6],[2.9,3.5,2.38],[3.9,3.8,1.85],[5.5,3.6,1.7],[1.7,3.9,4.5],[3.9,3.75,1.85],[1.27,6,10],[1.62,4,5.25],[2.38,3.4,3],[1.7,3.8,5.25],[1.8,3.6,4.5],[1.8,3.75,4.33],[1.53,4.1,6.5],[1.7,4,4.75],[2.35,3.4,3],[6.5,4.75,1.44],[1.36,4.75,8.5],[3.2,3.3,2.3],[2.15,3.5,3.4],[2.3,3.3,3.2],[2.9,3.8,2.2],[2.75,3.4,2.55],[1.38,5.25,7.5],[2.05,3.4,3.75],[4.75,3.7,1.75],[1.33,5.5,7.5],[2.45,3.4,2.88],[3.6,3.2,2.2],[1.73,3.8,4.75],[3.4,3.9,2],[1.25,6,12],[2.7,3.4,2.6],[1.73,4.1,4.5],[2.7,3.5,2.55],[1.75,3.6,4.75],[1.8,3.6,4.5],[1.8,3.8,4.33],[3,3.3,2.4],[4.75,4,1.7],[1.91,3.6,3.8],[2.9,3.25,2.5],[5.25,3.75,1.67],[1.27,5.75,10],[3.75,3.5,2],[2.63,3.4,2.6],[3.25,3.1,2.38],[1.57,3.75,6.5],[4.33,4,1.73],[1.45,4,7.5],[2.45,3.3,2.9],[2.15,3.5,3.25],[2.3,3.4,3.1],[1.48,5,5.5],[3.1,3.6,2.2],[3.2,3.5,2.2],[1.85,3.6,4.2],[3.9,3.7,1.9],[1.22,6.5,12],[2.15,3.75,3.1],[1.42,5,6.25],[2.63,3.25,2.75],[3.8,3.7,1.91],[2,3.5,3.75],[3.5,3.6,2.05],[2.2,3.5,3.2],[3.7,3.5,2.05],[1.4,5,7.5],[3.4,3.7,2],[1.6,3.9,5.75],[12,6.25,1.22],[2.55,3.2,2.9],[3.3,3.2,2.3],[3.25,3.5,2.2],[2.15,3.4,3.4],[1.33,5.5,8],[1.5,4.33,6.5],[1.36,5.5,7],[2.25,3.5,3.1],[2.3,3.6,2.9],[2.75,3.75,2.35],[1.91,3.6,3.9],[1.8,3.7,4.33],[1.85,3.4,4.5],[1.75,3.6,4.75],[3.1,3.3,2.3],[1.48,4.75,6],[2.2,3.4,3.3],[1.22,7,11],[4.5,3.6,1.8],[2.3,3.2,3.3],[1.91,3.8,3.7],[1.7,3.6,5.25],[2.63,3.4,2.63],[1.65,3.6,6],[9,5.75,1.3],[1.7,3.8,5],[1.6,3.75,6],[5,4,1.67],[1.36,5.25,7.5],[3,3.25,2.4],[2.38,3.3,3],[5.25,3.9,1.65],[1.36,5,8.5],[2.15,3.5,3.3],[3.8,3.6,1.95],[3.7,3.6,2],[2.9,3.6,2.3],[2.05,3.4,3.6],[3.1,3.2,2.4],[1.62,4,5.5],[1.4,6,5.75],[4,3.8,1.85],[2.2,3.3,3.4],[3.6,3.3,2.1],[1.5,4.33,6.25],[1.33,5.5,8],[3.2,3.3,2.3],[1.91,3.4,4.33],[1.85,3.6,4.2],[1.3,6,8],[5,3.75,1.73],[4.6,3.8,1.75],[3.1,3.5,2.25],[2.6,3.5,2.6],[3,3.25,2.4],[5.5,3.8,1.62],[2.1,3.5,3.4],[1.75,3.8,4.5],[1.09,9.5,23],[5.25,4.5,1.55],[2.1,3.4,3.6],[4.5,3.9,1.73],[2,3.4,3.9],[1.85,3.9,4],[2.45,3.25,2.9],[2.4,3.2,3],[1.62,4,5.25],[1.57,4.33,5.25],[1.91,3.7,3.8],[1.7,3.9,4.75],[2.75,3.4,2.55],[1.27,6.5,9],[3.3,3.1,2.35],[1.42,4.33,7.5],[3.3,3.5,2.1],[1.62,4,5.25],[2.8,3.5,2.45],[4.33,3.7,1.83],[6.25,5,1.44],[1.33,5.5,8.5],[1.4,4.5,8],[2.5,3.4,2.75],[1.95,3.4,3.9],[2.15,3.4,3.4],[2.05,3.5,3.6],[2,3.9,3.3],[2.45,3.1,3.1],[1.38,5.5,6.5],[2.35,3.3,3.1],[1.36,5.5,8],[3.3,3.4,2.15],[1.53,4.5,5.75],[3,3.4,2.35],[1.75,4.1,4.1],[5.5,4,1.62],[2.25,3.3,3.3],[1.25,6.5,9.5],[1.55,4.2,6],[5.75,4.75,1.5],[4.75,4.5,1.58],[5,4,1.62],[1.72,3.8,4.75],[2,3.4,3.9],[2.7,3.25,2.7],[2.15,3.4,3.4],[2.15,3.7,3.1],[2.4,3.3,3],[5.5,4.33,1.55],[3.7,3.4,2.05],[4,3.4,1.95],[1.38,5,7.5],[2,3.6,3.6],[4.2,4.33,1.7],[1.38,5,7.5],[5,4,1.67],[1.38,5,7.5],[1.4,4.75,7.5],[1.65,3.9,5.25],[3.3,3.1,2.35],[2.8,3.4,2.5],[3.5,3.4,2.1],[1.4,5,7],[3.25,3.5,2.15],[4.75,3.9,1.7],[1.37,4.75,7.5],[1.53,4.33,6],[1.73,3.6,5],[2.3,3.4,3.1],[2.6,3.25,2.75],[2.4,3.3,3],[2,3.7,3.5],[1.57,3.9,6],[3.6,3.2,2.15],[6.5,4.75,1.42],[2.05,3.5,3.6],[1.36,5.5,7],[1.67,3.9,5],[2.2,3.5,3.2],[2.25,3.25,3.25],[1.45,5,6],[2.7,3.6,2.45],[5.5,4.2,1.57],[17,8.5,1.14],[1.9,3.9,3.75],[2,3.25,4.1],[4.2,3.6,1.82],[1.69,3.8,4.5],[3.1,3.2,2.37],[2,3.4,3.75],[1.5,4.2,6.5],[1.14,8,19],[4,3.6,1.9],[2.2,3.6,3.1],[1.55,4.1,6],[2.4,3.25,3],[3.2,3.6,2.15],[1.85,3.6,4.33],[1.75,3.8,4.5],[1.53,4.1,6.25],[2,3.8,3.4],[2.8,3.3,2.55],[2.55,3.3,2.75],[3.5,3.6,2.05],[1.9,3.5,4.1],[3.5,3.4,2.1],[3.6,3.6,2],[1.8,3.5,4.75],[1.13,9,17],[1.57,4.75,4.75],[1.22,7,11],[1.5,4.2,7],[2.35,3.3,3.1],[1.38,5,8],[3.3,3.25,2.25],[5.25,4.2,1.62],[6.25,5.5,1.4],[1.7,4.5,4.1],[1.62,4.2,5],[6.5,5,1.42],[1.75,4.2,4.1],[6,3.9,1.57],[1.6,4,5.5],[4.5,3.6,1.75],[2.88,3.25,2.45],[1.5,4.5,6],[1.4,4.75,7.5],[2.45,3.75,2.6],[2.15,3.4,3.4],[6.5,5.25,1.37],[1.9,3.2,4.75],[2.1,3.6,3.25],[1.36,5.25,7.5],[1.55,4.33,5.75],[2.35,3.25,3.1],[4.2,3.75,1.8],[2.8,3.4,2.45],[4.5,3.8,1.75],[6,4.5,1.5],[1.83,4.2,3.7],[9,7,1.25],[2.1,3.7,3.2],[3.6,3.8,1.95],[2.25,3.5,3.1],[3.9,4.1,1.83],[1.38,4.75,8.5],[1.29,6,9],[1.75,3.9,4.2],[1.53,4.5,5.5],[1.48,4.5,6.5],[1.2,7,13],[1.95,4.2,3.25],[1.57,4.75,5],[1.3,6,8.5],[2.25,3.5,2.9],[1.91,3.6,4],[3.25,3.4,2.25],[1.38,4.75,8.5],[6.25,4.75,1.45],[1.62,4.33,4.5],[2.2,3.3,3.5],[3.6,3.6,1.95],[2.38,3.3,3],[4.75,3.8,1.73],[1.48,4.5,6.25],[1.8,3.8,4.2],[3.1,3.6,2.2],[2.2,3.2,3.5],[1.27,6.25,9.5],[2.35,3.3,3.1],[3.1,3.3,2.3],[3.25,3.5,2.15],[3.25,3.8,2.05],[1.55,4.33,5.25],[1.33,5.25,8],[3,3.3,2.4],[1.73,4.2,4.2],[2.7,3.2,2.75],[3.5,3.4,2.1],[3.8,3.9,1.9],[1.67,3.75,5.25],[2.2,3.5,3.2],[1.85,3.7,4],[1.38,5,8],[2.35,3.5,2.9],[1.65,3.75,5.75],[2.45,3.3,2.9],[1.91,3.5,4],[1.42,4.75,7],[3.4,3.6,2.1],[4.5,3.9,1.73],[8,5.5,1.33],[1.75,4,4.2],[1.45,4.75,6.5],[2.25,3.7,3],[3.4,3.3,2.2],[2.88,3.5,2.38],[2.7,3.2,2.75],[2.6,3.8,2.45],[2,3.4,3.8],[2.5,3.5,2.7],[3.4,3.5,2.1],[1.85,3.9,3.8],[3.4,3.8,2],[1.85,3.8,3.8],[3.8,3.8,1.9],[3.1,3.25,2.38],[1.17,7.5,15],[1.75,3.75,4.5],[1.5,4.5,6],[2.3,3.1,3.4],[3.6,3.4,2.1],[1.7,3.75,5],[1.95,3.5,3.9],[2.7,3.5,2.5],[1.18,6.5,17],[1.5,4.75,5.75],[2.8,3.75,2.3],[1.6,4,5.75],[2.45,3.25,3],[1.57,4.2,5.5],[3.6,3.7,2],[4.75,4.5,1.62],[3.7,3.8,1.95],[2.63,3.4,2.6],[3.25,3.25,2.25],[2.2,3.4,3.25],[1.4,5,7],[2.5,3,3.1],[5.75,4.1,1.55],[2.05,3.5,3.5],[1.6,4.5,5],[2.5,3.25,2.88],[1.8,3.5,4.75],[1.36,4.75,9],[1.62,3.9,5.5],[1.95,3.8,3.5],[4.1,4.2,1.75],[1.4,4.75,7.5],[4.33,3.8,1.8],[1.8,3.8,4.33],[1.95,3.3,4.2],[2.35,3.4,3],[1.85,3.75,4],[10,6,1.27],[1.91,3.6,3.9],[1.83,3.5,4.5],[3.3,3.75,2.05],[2.7,3.5,2.5],[1.65,4.33,4.5],[5.25,4,1.62],[1.5,4.75,5.75],[2.7,3.2,2.7],[2.63,3.6,2.5],[2.2,3.3,3.4],[1.91,3.5,4],[7.5,5,1.38],[1.36,4.75,8.5],[2.2,3.4,3.25],[2.8,3.5,2.45],[2.25,3.5,3.1],[2.25,3.25,3.3],[1.9,3.9,3.7],[6.25,4.5,1.48],[1.62,4.2,4.75],[1.91,3.6,4],[2.1,3.25,3.75],[1.44,5,6.25],[3.8,3.6,1.95],[3.6,3.8,1.95],[3,3.3,2.4],[1.42,4.75,7.5],[1.75,4,4.33],[1.45,4.5,7],[1.22,6.5,12],[3.2,3.3,2.3],[2.8,3.25,2.63],[2.2,3.3,3.3],[2.3,3.4,3.1],[1.5,4.33,6.5],[2.75,3.3,2.63],[4.33,4.33,1.67],[3.4,3.3,2.2],[2.2,3.25,3.3],[4.33,4.1,1.73],[1.83,3.8,4.1],[1.36,5,8.5],[2.15,3.5,3.4],[4.5,3.8,1.75],[3.25,3.4,2.25],[4.1,4.1,1.8],[1.36,5.25,7],[1.45,5,6],[4.2,3.5,1.9],[3.1,3.75,2.15],[2.2,3.2,3.5],[1.25,6.5,10],[1.27,6,9.5],[2.3,3.5,3],[3.8,4,1.85],[1.55,4.33,5.75],[2.55,3.3,2.8],[4.2,4,1.75],[1.67,3.8,5.25],[1.67,4,4.75],[4,3.5,1.91],[1.13,8.5,21],[3.9,3.9,1.85],[2.55,3.3,2.8],[3.3,3.3,2.25],[3.75,3.5,2],[1.91,3.6,4],[1.83,4,3.8],[2.75,3.6,2.45],[1.48,4.33,6.5],[1.67,4,5.25],[1.22,8,10],[3.5,3.6,2.05],[3.5,3.75,2],[5.75,4.1,1.57],[2.6,3.3,2.75],[2.1,3.6,3.3],[2.4,3.25,3],[2.55,3.6,2.6],[5,4.33,1.6],[1.42,4.75,7],[2.25,3.6,3],[4.1,3.4,1.95],[1.25,6.5,10],[2.63,3.4,2.6],[1.83,3.9,4],[2.5,3.1,2.88],[2.25,3.25,3.2],[5.25,4.2,1.6],[1.5,4.75,5.75],[2.1,3.25,3.7],[3.4,3.75,2],[1.42,4.75,7],[1.36,5.25,8],[2.15,3.3,3.4],[1.55,4.5,5.5],[2.1,3.6,3.2],[7.5,4.75,1.38],[1.75,3.9,4.5],[1.48,4.33,7],[2.5,3.3,2.88],[6.5,4.75,1.44],[2.7,3.3,2.63],[2.35,3.25,3.1],[1.7,3.9,4.75],[1.8,3.6,4.5],[3.8,3.75,1.91],[1.6,4.75,4.5],[2.88,3.25,2.2],[2.1,3.6,3.3],[1.85,3.5,4.33],[3.1,3.3,2.3],[1.75,3.5,5],[3.4,3.6,2.05],[1.4,5.25,6.5],[4.75,4,1.7],[1.67,3.8,5],[1.6,4.1,5],[3.7,3.8,1.91],[1.73,4,4.75],[2.15,3.3,3.5],[1.22,6.5,11],[2.75,3.1,2.75],[1.73,4,4.5],[6,4.33,1.53],[4.75,4,1.7],[1.67,3.9,5.25],[1.85,3.9,3.8],[2.5,3.2,2.88],[3.7,3.5,2.05],[2.6,3.4,2.7],[1.2,7,11],[3.75,3.8,1.9],[1.91,3.5,4.1],[3.5,3.8,2],[1.95,3.7,3.7],[1.55,4.2,6],[2.5,3.25,2.9],[1.85,3.6,4.1],[5.75,4.2,1.55],[2.9,3.5,2.3],[1.5,4.5,6],[1.8,3.9,4.1],[2.1,3.5,3.4],[1.57,4.5,5],[1.95,3.5,3.9],[4.5,4.1,1.73],[1.8,3.5,4.75],[2.2,3.3,3.4],[1.57,4.5,5],[1.22,6.25,12],[2.7,3.5,2.5],[3.3,3.5,2.15],[2.1,3.25,3.75],[5,4,1.67],[2.1,3.5,3.5],[1.95,3.5,3.9],[2.38,3.7,2.75],[1.55,4.33,5.5],[2.38,3.4,3],[3.2,3.6,2.2],[4.5,4.2,1.7],[1.91,3.7,3.8],[1.57,4,6.25],[1.36,5.5,7],[1.7,3.8,5],[4.75,3.8,1.73],[4.75,3.9,1.7],[11,5.25,1.29],[1.85,3.6,4.33],[2,3.7,3.5],[1.22,6.5,12],[2.5,3.7,2.63],[1.45,5,5.5],[1.65,4,5],[4.1,3.9,1.8],[2.7,3.25,2.7],[6,4,1.57],[3.7,3.75,1.91],[4.1,3.7,1.85],[1.8,3.75,4.33],[4.5,3.9,1.73],[1.42,4.75,6.5],[1.7,4,4.75],[4.75,4.33,1.62],[2,3.6,3.5],[2.1,3.6,3.3],[1.53,4.5,5.5],[1.6,3.8,5.5],[2.5,3.6,2.63],[1.57,4,6],[1.85,3.4,4.33],[5.5,4.5,1.5],[2.7,3.4,2.55],[4.75,4.1,1.65],[2,3.5,3.7],[1.38,5,7.5],[2.63,3.5,2.6],[2.35,3.25,3.1],[4.1,3.8,1.83],[3.3,3.3,2.25],[1.38,4.75,8.5],[1.8,4.2,3.8],[4.33,4.33,1.7],[2.55,3.3,2.88],[1.73,4,4.5],[2.2,3.4,3.3],[1.3,6.25,8],[1.55,4.2,5.75],[3.2,3.8,2.1],[3.1,3.5,2.2],[1.53,4.1,6.25],[3.5,3.4,2.1],[2.45,3.5,2.88],[1.67,4,5],[1.95,3.6,3.8],[2.25,3.4,3.2],[1.8,3.8,4.33],[1.44,4.5,7.5],[2.15,3.3,3.5],[4.5,4,1.73],[1.65,4.2,4.75],[3,3.6,2.2],[2.63,3.3,2.7],[2.7,3.2,2.7],[3.1,3.8,2.15],[1.62,4.1,5],[2.1,3.75,3.25],[1.62,3.9,5.75],[2,3.75,3.5],[2.7,3.75,2.4],[2.2,3.5,3.2],[1.67,3.75,5.5],[3.1,3.4,2.3],[1.5,4.2,7],[1.83,3.7,4.2],[2.38,3.2,3.1],[2.5,3.5,2.7],[2,3.5,3.6],[19,9,1.13],[2.7,3.2,2.7],[2.75,3.6,2.45],[1.44,5,6.25],[2.4,3.4,2.9],[4.5,4.33,1.67],[1.45,4.75,6.25],[1.85,3.8,4],[1.33,5,9.5],[1.91,3.75,3.75],[2.5,3.75,2.6],[3.1,3.2,2.1],[1.44,4.33,7],[1.57,4.33,5.25],[2.3,3.8,2.75],[2.15,3.6,3.2],[1.7,4,4.75],[6.5,4.75,1.44],[1.83,4,3.9],[1.27,6.25,9.5],[2.75,3.6,2.4],[3.9,3.75,1.85],[1.36,5.75,7],[5,4.33,1.6],[2.7,3.3,2.63],[2.6,3.6,2.6],[5.5,4.2,1.57],[1.83,4.1,3.75],[1.2,7.5,12],[2.75,3.5,2.4],[1.6,4.2,5.25],[1.73,4.2,4.33],[1.8,3.75,4.33],[3.2,3.6,2.15],[3.8,3.8,1.9],[2.1,3.8,3.2],[1.09,11,23],[4.5,4.33,1.67],[1.91,3.7,3.9],[1.85,4.2,3.6],[2.35,3.5,2.9],[4.2,4,1.75],[2.88,3.8,2.25],[1.8,4.2,3.8],[1.29,6,9],[3.3,3.75,2.05],[3.6,3.6,2],[1.91,3.75,3.8],[1.85,4,3.75],[2.25,3.25,3.3],[1.4,4.75,8],[7,5,1.4],[2.15,3,3.8],[2.6,2.9,3.1],[1.73,3.5,5.25],[1.57,3.9,6],[6,3.9,1.57],[3.4,3.3,2.2],[1.22,6.25,13],[1.91,3.4,4.2],[3,3.1,2.55],[1.25,5.25,15],[11,6,1.25],[2.4,3.2,3.1],[1.8,3.4,5],[1.53,4.33,6],[9.5,5.5,1.3],[1.7,3.5,5.5],[2.25,3,3.6],[2.2,3.4,3.25],[2.15,3.25,3.5],[2.3,2.9,3.6],[4.75,3.5,1.8],[3.5,3.1,2.25],[2.4,3.3,3],[1.18,7,15],[2.75,3.5,2.5],[3,3.1,2.55],[2.38,3.2,3.1],[6.25,5.5,1.4],[1.85,3.4,4.5],[1.95,3.1,4.5],[5,4.33,1.6],[1.6,3.9,5.75],[1.8,3.7,4.33],[1.73,3.9,4.75],[3.25,3.25,2.3],[2.55,3.2,2.9],[1.22,7,11],[2.1,3.4,3.5],[1.91,3.6,3.75],[1.91,3.6,4],[1.2,7,13],[2.25,3.1,3.5],[1.55,4.33,5.5],[3,3,2.55],[2.3,3.3,3.2],[5,3.6,1.75],[1.91,3.2,4.5],[1.22,6.5,12],[1.45,4.33,7],[2.25,3.1,3.4],[7.5,5.75,1.33],[3.1,3.4,2.3],[2.3,2.9,3.6],[1.5,4.5,6],[1.8,3.4,4.75],[1.95,3.25,4.33],[10,5.75,1.25],[2.45,3.3,2.88],[2.05,3.1,4.1],[3,3.6,2.3],[2.35,3,3.4],[2.1,3.25,3.7],[2,3.3,4],[2.88,3.1,2.6],[1.27,5.75,10],[1.75,3.8,4.5],[1.7,3.5,5.5],[2.15,2.9,4.1],[2.5,3.3,2.88],[2.45,3.5,2.8],[1.53,3.8,7],[1.45,5,6],[2.3,3.1,3.3],[5.75,5.25,1.45],[2.63,3.4,2.63],[2.05,3.6,3.5],[4.5,3.8,1.75],[3,3.1,2.5],[1.85,3.3,4.75],[1.2,7,12],[1.91,3.6,4],[1.38,4.75,8.5],[3.75,3.25,2.1],[2.1,3.4,3.5],[2.88,3.25,2.5],[8,4.33,1.42],[2.25,3,3.6],[1.95,3.5,3.8],[1.8,3.5,4.75],[1.95,3.25,4.1],[1.67,3.5,6],[3.1,3.6,2.2],[2.1,3.3,3.6],[1.95,4.1,3.3],[2.35,3.2,3.2],[2.1,3.1,3.9],[3.1,3.6,2.2],[2.15,3,3.8],[1.7,3.8,5],[1.33,5,9],[2.7,3,2.8],[1.17,8,15],[2.88,3.4,2.45],[2.38,3,3.3],[1.22,6.25,12],[1.57,4.2,5.25],[3,3.1,2.5],[2.7,3.2,2.7],[2.4,3.25,3],[2.15,3.3,3.5],[1.22,6.5,12],[2.8,3.5,2.38],[1.5,3.8,8],[5.25,5,1.5],[2.5,2.9,3.2],[3.3,3.4,2.2],[4.5,4.2,1.65],[2,3.5,3.7],[2.6,3,2.9],[1.36,5.5,7],[2.8,3.1,2.7],[1.44,4.75,7],[3.5,3.2,2.2],[1.53,4.33,5.75],[5.25,3.5,1.73],[7,5.25,1.38],[2.05,3.3,3.8],[2.25,2.88,3.8],[2.35,3,3.4],[1.2,7,13],[3.5,3.3,2.15],[1.2,6.25,17],[2.8,3.4,2.45],[3,3.3,2.38],[2.05,3.5,3.5],[6.5,5.25,1.4],[1.95,3.4,4.1],[1.73,4.2,4.1],[4.1,3.9,1.8],[2.55,3,3],[1.62,3.8,5.75],[2.8,2.9,2.8],[4,4.5,1.73],[3.25,3.25,2.25],[2.15,3.3,3.5],[2.15,3.4,3.4],[2.25,3.4,3.2],[1.3,5.5,9.5],[1.73,3.8,4.5],[1.75,3.9,4.5],[1.3,5,11],[2.45,3.1,3.1],[1.2,7,12],[2.5,2.8,3.25],[1.91,3.4,4.2],[2.63,3.25,2.75],[5.5,4,1.6],[2.55,3.4,2.75],[1.9,3,4],[3.6,3.4,2.05],[3.4,3.4,2.15],[2.2,3,3.7],[1.2,7,12],[5,4,1.67],[3.4,4.75,1.83],[2.4,3.1,3.2],[1.7,3.5,5.5],[1.75,3.6,5],[2.05,2.9,4.5],[2,3.3,4],[3,2.9,2.63],[3.2,3.5,2.2],[5.25,4.75,1.5],[1.75,3.6,4.75],[1.45,4.75,6.25],[1.9,3,5.25],[2.25,3.2,3.4],[3.9,3.6,1.91],[3.3,2.9,2.45],[4.2,3.5,1.91],[1.45,4.33,7],[2.35,3.25,3.1],[2.2,3.2,3.5],[1.91,3.3,4.33],[3.1,3.3,2.35],[2.6,3.3,2.75],[1.85,3.4,4.5],[1.17,8,15],[3.8,2.9,2.25],[1.75,3.4,5.25],[2.6,3.5,2.63],[2.55,2.75,3.4],[1.3,5.25,10],[2.05,3.2,4],[5,4.5,1.55],[2.25,3.3,3.25],[2.2,3.3,3.2],[2.15,3.25,3.6],[2.45,3.1,3.1],[2.88,3,2.63],[3.4,3.9,2],[1.3,5.25,10],[1.11,10,19],[2,3.4,3.9],[2.75,3,2.7],[2.1,3,4.1],[1.95,3,4.5],[2.75,3,2.75],[2.75,3.3,2.55],[5.25,4,1.62],[7.5,5.75,1.33],[1.25,6,12],[1.83,3.5,4.5],[2.8,2.9,2.8],[2.3,3.1,3.4],[2.4,3.2,3.1],[1.95,3.3,4.1],[1.14,9,15],[1.67,4,5],[2.3,2.8,3.9],[1.62,3.9,6],[2.15,3.3,3.5],[1.48,4.75,6.25],[5.25,4.75,1.55],[1.7,4.33,4.33],[2.7,3.3,2.55],[2.35,3.2,3],[3.25,3.1,2.25],[2.1,3.1,3.6],[1.33,5.25,8],[3.6,3.1,2.15],[4.2,3.3,1.83],[2.63,3.25,2.6],[2.88,3.2,2.45],[7,5,1.36],[4,4,1.8],[1.67,3.8,5.25],[1.48,3.9,7.5],[1.9,3.4,4.33],[4.75,4,1.7],[1.5,4.1,7],[2.35,2.9,3.5],[1.11,11,15],[1.83,3.5,4.5],[1.7,4,4.5],[2.3,3,3.5],[2.63,3.1,2.8],[2.4,3.1,3.2],[1.3,6.5,7],[3,3.3,2.4],[5.75,3.6,1.67],[2.38,3.3,3],[2.35,3.2,3.25],[1.75,3.8,4.5],[2.38,3.3,3],[1.3,5.5,10],[1.67,3.75,5.25],[3.1,3.3,2.3],[1.73,3.6,5],[2.8,3.4,2.45],[1.62,3.9,5.25],[4.75,4.5,1.62],[1.5,4.5,6],[2.8,2.9,2.8],[2.55,3.1,3],[2.05,3.1,4.1],[1.85,3.4,4.33],[3.25,3.4,2.2],[2.75,3.4,2.5],[1.57,3.8,6.5],[2.88,3.2,2.55],[1.33,5.5,7.5],[2.3,3.2,3.3],[1.25,6.5,10],[2.2,3.3,3.4],[1.83,3.5,4.33],[1.7,3.75,5],[1.91,3.7,3.9],[2.1,3.3,3.6],[2.35,3,3.4],[2.2,3.3,3.4],[2.15,3.4,3.4],[2.3,3.2,3.3],[1.25,7,9.5],[1.83,3.3,5],[2.2,3.4,3.25],[1.95,4,3.5],[1.75,3.9,4.75],[1.57,4.2,5.5],[5.5,4.33,1.57],[1.73,4,4.75],[3.1,3.8,2.15],[3,2.88,2.7],[2.3,3.3,3.2],[2.8,3.1,2.7],[2.5,3.2,2.9],[3.2,3.6,2.2],[1.3,6,8.5],[1.73,3.7,4.75],[2.5,3.3,2.88],[1.29,6,9],[2.7,3.1,2.8],[2.2,3.4,3.3],[2.38,3.25,3],[1.7,3.7,5.25],[2.3,3.5,3.1],[2.75,3,2.88],[1.8,3.4,4.5],[2.6,3.1,2.88],[2.38,3.3,3],[1.22,6.5,12],[2.55,3.8,2.45],[2.3,3,3.5],[1.22,6.5,11],[2.4,3.25,3],[2.1,3.25,3.75],[3.6,3.4,2.05],[3.7,4.2,1.85],[2.2,3,3.8],[5.25,3.8,1.67],[2.1,3.4,3.5],[2.2,3.6,3.1],[2.7,3.1,2.7],[2.4,3.25,3.1],[2.05,3.25,4],[2.05,3.4,3.7],[2,3.4,3.8],[2.05,3.4,3.75],[1.7,4.33,4.33],[1.8,3.9,4],[2.7,3.4,2.55],[4.5,4,1.7],[1.75,3.8,4.5],[1.91,3.3,4.2],[1.57,4.1,5.75],[4.5,3.9,1.73],[2.38,3.5,2.9],[2.5,3.25,2.88],[2.25,3.3,3.3],[2.05,3.4,3.7],[2.05,3.5,3.5],[2.55,3.5,2.7],[2.3,3.5,3],[1.7,3.75,5],[3,3.25,2.4],[1.62,5,4.33],[2.3,3.5,3],[1.8,3.8,4.2],[1.57,4.33,5.25],[2.55,3.5,2.63],[2.63,3.3,2.7],[2.1,3.3,3.6],[3.1,3.75,2.15],[2.2,3.2,3.5],[2.2,3.4,3.3],[2.05,3.8,3.3],[1.22,7,11],[2.15,3.2,3.4],[1.73,3.6,4.5],[2.2,3,3.4],[2.1,3.4,3.3],[2.05,3.1,3.8],[3.7,3.6,1.9],[3,3.5,2.15],[2.15,3.4,3.2],[2.35,3.5,2.63],[1.33,6,7.5],[2.45,3.4,2.8],[2.25,3.2,3.4],[1.73,3.8,4.75],[2.45,3.5,2.75],[2.45,2.88,3.4],[1.8,3.9,4.2],[1.44,4.5,7],[1.5,4.75,5.75],[3.6,4.2,1.85],[2.45,3.6,2.75],[1.9,3.3,4.5],[6,4,1.57],[1.33,5.25,9],[2.1,3.3,3.5],[3.25,3.3,2.25],[2.4,3.25,3],[1.4,5,7],[1.42,4.75,7.5],[1.95,3.3,4.1],[1.42,4.75,7.5],[2.6,3.2,2.75],[6,3.9,1.57],[2.45,3.1,3.1],[4.1,3.5,1.91],[1.3,5,11],[5.25,3.6,1.7],[4.5,3.4,1.85],[3.2,3.1,2.4],[1.3,5.25,9.5],[1.48,4.33,7],[2.15,3.2,3.6],[2.75,3,2.75],[3.5,3.1,2.25],[1.5,4.1,7],[1.4,4.5,8.5],[2.75,3.1,2.75],[3.5,3.6,2.05],[1.91,3.4,4.2],[2.38,3.1,3.2],[1.62,3.75,6],[2.88,2.9,2.75],[1.83,3.2,5.25],[6.5,3.9,1.55],[4.33,3.6,1.83],[2.8,3.1,2.63],[2.55,3.2,2.88],[3.25,3.4,2.2],[2.6,3.2,2.8],[1.29,5.5,12],[1.27,5.75,12],[1.45,4.33,8],[1.85,3.6,4.2],[6,4.2,1.53],[2.3,3.2,3.3],[3.3,3.25,2.25],[1.42,4.2,8.5],[4.2,3,2.05],[2.35,3.1,3.2],[2.3,3.1,3.4],[3,3,2.6],[2.5,3.1,3],[1.7,3.6,5.25],[1.85,3.7,4.1],[1.2,6.5,15],[2.2,3.4,3.25],[2.15,3.2,3.6],[1.6,3.9,5.75],[3,3.3,2.4],[1.48,4,8],[2.7,3.2,2.7],[2.9,3.2,2.5],[2.55,3.1,2.9],[5.25,3.3,1.8],[3.3,3.25,2.25],[2.88,3.25,2.5],[3.6,3.3,2.1],[2.1,3,4],[1.73,4,4.5],[1.5,4.33,6.5],[3,3.25,2.4],[1.3,5.5,10],[3.9,3.5,1.95],[1.8,3.4,4.75],[3,3.1,2.4],[5,4.2,1.62],[2.25,2.9,3.5],[4.5,3.5,1.85],[2.25,3,3.6],[2.7,3.1,2.75],[3.2,3.25,2.3],[6.5,3.75,1.55],[2.63,3.2,2.75],[1.6,3.6,6.5],[1.44,4.1,8.5],[1.53,3.75,7.5],[1.75,3.5,5],[1.85,3.25,4.75],[1.38,4.5,8.5],[2.6,3.1,2.88],[3.7,3.25,2.1],[4.5,3.6,1.8],[1.95,3.1,4.5],[6.5,4.33,1.5],[7.5,4.5,1.42],[1.62,3.8,5.75],[1.95,3.25,4.33],[4.2,3,2.05],[2.2,3,3.7],[2.45,3,3.2],[1.53,3.8,7],[2.25,3.1,3.4],[1.48,4.5,6.5],[2.75,2.9,2.9],[1.5,4.1,7],[5.75,4,1.57],[1.44,4.5,7],[3,3.1,2.55],[2.75,3,2.75],[1.55,4,6.25],[1.36,5,8],[2.88,3,2.75],[3.75,3.2,2.1],[3.9,3.4,2],[2.25,3.25,3.4],[2.25,3,3.6],[6,3.75,1.62],[1.62,3.7,6.25],[1.9,3.5,4],[3.5,3.25,2.2],[2.1,3.2,3.75],[1.73,3.6,5],[2.05,3,4.2],[2.7,3,2.8],[1.3,5.5,10],[1.62,3.8,5.75],[3,2.88,2.7],[8,5.75,1.3],[1.73,3.75,4.75],[2.6,2.88,3.1],[1.48,4,8],[2.88,3.25,2.5],[1.53,4.33,6],[5,4,1.67],[2.4,3.1,3.2],[5.25,3.6,1.67],[2.6,3.1,2.9],[2.35,3,3.2],[2.4,3,3.3],[2.4,3,3.3],[4.5,3.6,1.8],[2.5,2.88,3.3],[1.95,3.25,4.2],[3.6,3.3,2.1],[1.33,5,9.5],[1.42,4.33,8],[1.8,3.4,4.75],[4.5,3.4,1.85],[6.5,4.2,1.5],[2.88,3.25,2.5],[2.1,3.3,3.6],[1.62,3.8,5.75],[1.95,3.2,4.33],[2.15,3.1,3.75],[2.3,3.2,3.3],[2.2,3.3,3.4],[4,3.4,1.95],[3.5,3,2.25],[4.75,3.3,1.8],[1.91,3.2,4.2],[3.1,3,2.45],[7.5,4.5,1.4],[1.38,4.75,8.5],[6.25,3.9,1.55],[1.75,3.6,4.75],[3.5,3.5,2],[1.6,3.6,6.25],[6,3.9,1.6],[1.73,3.8,4.75],[1.9,3.1,4.75],[1.91,3.3,4.33],[1.27,5.5,13],[2.3,3.2,3.3],[3.4,3.1,2.3],[1.8,3.4,5],[2.7,3,2.9],[1.42,4.75,7.5],[5.5,3.4,1.7],[5.25,3.5,1.73],[5,3.9,1.67],[2.75,3.3,2.6],[1.36,5.5,7.5],[2.4,3.1,3.2],[7.5,5,1.4],[2.3,3,3.4],[2.4,3.1,3.2],[1.44,4.5,7.5],[1.95,3.3,4.2],[1.83,3.4,4.6],[1.53,4,6.5],[1.6,3.9,6],[2.75,3,2.88],[3.8,3.4,2],[3.4,3,2.35],[1.7,3.5,5.25],[2.1,3,4.2],[1.25,6,13],[1.3,5.25,10.5],[1.13,9,19],[3.6,3.3,2.1],[2.9,3.25,2.5],[6.5,3.9,1.55],[7,4.75,1.42],[1.48,4.33,7.5],[6.25,4.2,1.5],[2.9,2.55,3],[2.2,3.3,3.4],[3.75,3.1,2.15],[1.29,5,13],[2.63,2.9,3.1],[2.7,2.9,3],[1.18,7.5,15],[1.62,3.75,6],[1.62,3.8,5.75],[4,3,2.1],[1.91,3.4,4.2],[1.42,4.5,7.5],[3,3,2.6],[2.05,3.2,4],[2.63,3.1,2.88],[2.8,3,2.8],[2.2,2.88,4],[2.9,3.1,2.55],[1.8,3.4,5],[2.2,3,3.8],[1.95,3.1,4.5],[2.35,3.25,3.2],[11,5,1.3],[7.5,4.33,1.45],[4.33,3.4,1.91],[2.9,3.25,2.5],[2.55,3,3],[4.5,3.2,1.95],[1.75,3.75,4.75],[1.6,3.9,5.75],[3.1,2.88,2.63],[7.5,4.5,1.44],[1.48,4.2,7.5],[1.36,5,8.5],[1.48,4.1,7.5],[6.5,4.2,1.5],[1.73,3.75,4.75],[3.5,3.25,2.15],[1.95,3.4,4.1],[2.4,3,3.3],[3.2,3,2.45],[2.3,3,3.5],[3.3,3.25,2.25],[2.3,3,3.5],[2.2,3,3.75],[2.25,3.3,3.25],[1.75,3.3,5.25],[2,3.4,3.7],[7,4.33,1.48],[3.4,3,2.35],[2.25,3,3.6],[2.45,3.2,3],[1.33,5,9.5],[1.36,4.5,10],[1.67,4,5],[1.85,3.5,4.5],[2.25,3,3.7],[1.38,4.5,9.5],[7.5,4,1.5],[1.33,5.5,9],[6.5,4.33,1.5],[3.8,3.6,1.95],[2.88,3,2.7],[2.63,3.1,2.88],[4.2,3.2,2],[3.25,3.2,2.35],[1.57,3.8,6.25],[5.75,4,1.57],[1.67,3.7,5.5],[1.25,6.25,11],[2.1,3,4],[1.55,3.9,6.5],[1.7,3.6,5.25],[4.2,3.4,1.91],[3.6,3,2.25],[2.15,3.25,3.5],[2.2,3,3.8],[1.55,4.33,5.75],[1.33,4.75,10],[5.75,4.2,1.55],[3.25,3,2.4],[2.55,3,3.1],[2.4,3.3,3],[2.1,3.3,3.6],[4.1,3.3,1.95],[3.9,3.6,1.91],[5.25,3.4,1.75],[2.15,3.1,3.75],[2.05,3.2,4],[1.4,4.75,7.5],[1.33,5.25,9],[1.25,6,11],[1.38,4.75,8.5],[2.35,3,3.4],[1.53,3.75,8],[5,4.33,1.62],[1.95,3.1,4.5],[4.2,3.5,1.9],[1.8,3.4,5],[3.6,3.4,2.05],[3.2,3,2.45],[1.67,4,5.25],[5,3.75,1.7],[5,3.75,1.75],[1.38,4.5,9.5],[2.55,3,3],[1.33,5,9],[2.15,3.1,3.6],[1.9,3.3,4.33],[1.42,4.5,8],[3.1,3.3,2.35],[2.15,3.3,3.5],[6,3.8,1.6],[1.8,3.4,4.75],[3.1,3.5,2.25],[2.25,3.2,3.4],[5.75,4.33,1.53],[1.25,6,12],[2.15,3,3.9],[1.53,3.9,7],[2.45,3.25,2.9],[2.88,3.1,2.6],[6.25,3.9,1.57],[3.25,3.1,2.35],[1.5,4.5,6.5],[3.4,3.4,2.15],[1.33,5.25,9],[2.1,3.2,3.8],[3.1,3.2,2.4],[2.7,3,2.88],[1.91,3.3,4.33],[4.5,3.8,1.75],[7.5,5,1.4],[3.1,3.1,2.45],[4.5,3.6,1.8],[1.95,3.3,4.2],[3.5,3,2.3],[2.3,3.2,3.3],[2.25,3.3,3.3],[1.57,4.1,5.75],[1.8,3.5,4.75],[4.5,4.1,1.73],[1.22,6.5,12],[1.22,6,13],[2.9,3.25,2.5],[1.62,4.2,5],[2.6,3.2,2.8],[2.5,3.2,2.9],[4.5,3.7,1.8],[6.25,4.5,1.45],[8,4.75,1.38],[1.7,3.75,5],[2.1,3.4,3.6],[6.25,4.1,1.53],[2.1,3.3,3.5],[1.53,4.2,6],[1.25,5.25,12],[4.5,3.7,1.7],[1.33,5,8.5],[9,4.5,1.36],[1.53,4,5.75],[1.2,8,9],[1.62,4.2,4.75],[2.3,3.1,3.2],[2.7,3.2,2.63],[2.3,3.3,3],[2.7,3.5,2.55],[3.1,3.6,2.2],[1.55,4.2,6],[2.7,3.4,2.63],[1.48,4,8],[5.25,4.33,1.57],[1.75,3.5,5],[1.29,5.5,11],[7.5,4.5,1.42],[10,5.5,1.3],[1.22,7,9],[1.7,4.1,4.5],[1.85,3.6,4.33],[3.2,3.5,2.2],[1.53,4.75,5.25],[3.4,3.7,2.05],[4.5,3.9,1.75],[1.9,3.7,4],[1.85,3.9,3.9],[2.4,3.3,3],[2.88,3.75,2.25],[1.44,5,6.25],[1.6,4.5,4.75],[3.7,3.8,1.91],[9,6.5,1.27],[2,3.6,3.5],[1.4,5.25,6.5],[2.55,3.3,2.8],[2.1,3.8,3.2],[2.9,3.6,2.35],[5.5,4.5,1.55],[2.55,3.6,2.63],[2.6,3.4,2.7],[1.95,3.5,3.9],[1.06,12,26],[2.2,3.4,3.3],[1.95,3.9,3.4],[1.75,4.1,4.2],[2.7,3.4,2.6],[2.05,3.6,3.5],[7,6,1.33],[2.38,3.6,2.8],[1.65,4.33,4.5],[1.57,4.33,5.5],[1.57,5,4.5],[1.5,5,5.5],[1.09,11,21],[2.7,3.5,2.5],[3.2,3.7,2.1],[3.1,3.6,2.2],[2.55,3.6,2.6],[3.1,3.6,2.2],[2.25,3.4,3.1],[2.9,3.5,2.35],[1.95,3.4,4],[1.91,3.7,3.75],[2.75,3.5,2.45],[1.7,4.5,4.2],[1.7,4,4.75],[2.35,3.7,2.88],[6.25,5.25,1.42],[1.42,4.75,7],[2.8,3.5,2.4],[2.25,3.6,3],[2.2,3.4,3.2],[1.95,3.9,3.5],[2.88,3.5,2.35],[2.8,3.4,2.45],[1.44,4.75,6.5],[2.63,3.6,2.5],[1.33,5.5,7.5],[2.5,3.5,2.7],[2.5,3.4,2.8],[2.25,3.6,2.9],[3.2,3.9,2.05],[1.67,4.2,4.5],[2.35,3.5,2.9],[1.57,4.5,5.25],[10,6.5,1.22],[1.44,5.25,6.5],[1.83,3.9,4],[1.75,4,4.33],[5,4.5,1.57],[3.6,4,1.9],[1.95,3.9,3.5],[1.95,3.9,3.5],[2.15,3.5,3.3],[2.5,3.3,2.75],[1.22,7,9.5],[2.1,3.7,3.2],[2.75,3.9,2.3],[2.15,3.6,3.1],[4.33,4.2,1.7],[2.6,3.9,2.4],[1.4,5,6.5],[13,7,1.2],[2.2,3.6,3.1],[1.83,3.5,4.5],[1.55,4.33,5.75],[1.83,4,3.9],[2.6,3.6,2.7],[2.35,3.5,2.9],[1.17,8,13],[1.75,4,4.33],[3.2,3.6,2.15],[3.5,3.75,2],[3,3.75,2.2],[1.45,5,6],[2.45,3.3,2.9],[2.88,3.7,2.3],[1.1,10,21],[1.67,4.33,4.5],[1.67,4,5],[2.25,3.8,2.9],[2.55,3.6,2.63],[3,3.75,2.2],[1.73,4.2,4.2],[1.91,3.4,4.2],[2.55,3.4,2.63],[3.7,4,1.9],[1.95,3.6,3.8],[3.9,3.6,1.91],[5.75,5,1.45],[2.15,3.4,3.5],[1.73,4.2,4.2],[2.25,3.5,3],[1.62,4.5,4.75],[3.2,3.5,2.2],[1.7,4.2,4.33],[1.7,4.33,4.2],[1.95,3.8,3.6],[1.95,3.4,4],[1.55,4.33,5.25],[3.25,3.5,2.15],[1.09,11,21],[2.9,3.8,2.25],[1.55,4.5,5.5],[2.25,3.5,3.1],[2.3,3.3,3.1],[2.6,3.6,2.55],[2,3.8,3.4],[2.5,3.6,2.75],[2.1,3.8,3.2],[1.95,3.4,4.1],[13,9.5,1.14],[3.6,3.8,1.95],[1.8,3.6,4.5],[2.9,3.5,2.38],[2.15,3.25,3.7],[1.95,4.1,3.4],[1.85,3.8,4],[1.11,11,17],[1.73,4.2,4.2],[1.4,5,7],[1.75,3.8,4.33],[1.91,3.7,3.8],[10.5,7.5,1.22],[1.85,3.9,3.8],[1.7,4,4.5],[2.6,3.2,2.8],[2.7,3.5,2.5],[1.33,5.25,10],[2.15,3.5,3.25],[2.45,3.5,2.8],[2.4,3.8,2.7],[1.67,4,5],[5,4.75,1.55],[1.65,3.9,5.25],[2.9,3.3,2.45],[2.88,2.9,2.75],[1.1,12,17],[2.8,3.75,2.3],[5,4.5,1.57],[1.62,4.2,5.25],[2.3,3.5,3],[3.6,3.5,2.05],[3,3.75,2.2],[1.9,3.75,3.8],[4.5,3.5,1.8],[3.7,3.6,2],[1.95,3.8,3.5],[2,3.3,4.1],[3,3.8,2.2],[1.8,3.8,4.33],[1.55,4.5,5.5],[2.45,3.6,2.75],[8,6.5,1.29],[1.67,4.1,4.75],[1.22,6.5,12],[2,3.5,3.6],[1.83,3.75,4.2],[2.88,3.5,2.45],[2.05,3.6,3.5],[4.33,3.75,1.8],[4.2,4.2,1.73],[3.5,3.75,2],[3.25,3.8,2.1],[1.29,7,7.5],[1.53,4.5,5.5],[1.95,3.5,4],[2.5,3.25,2.9],[1.73,3.9,4.5],[1.45,3.75,6.5],[8,6,1.3],[1.45,4.75,6.5],[1.85,3.6,4.2],[1.44,4.75,6.5],[2.1,3.4,3.5],[1.14,9.5,13],[3.3,3.8,2.05],[3,3.3,2.38],[2.05,3.4,3.75],[2.15,3.8,3.1],[1.95,3.25,4.33],[2.75,3.1,2.75],[4.5,4,1.7],[2.2,3.5,3.25],[1.48,4.75,6],[1.7,4,4.5],[2.38,3.3,3],[1.75,4,4.33],[4.5,4.75,1.6],[1.5,4.75,5.25],[2.2,3.5,3.2],[3.3,3.5,2.15],[3.5,3.6,2.05],[1.2,8.5,9.5],[2.9,3.3,2.4],[5,4.5,1.57],[3.2,3.6,2.15],[1.42,5,6.5],[2.3,3.5,3],[4.1,4,1.75],[2.63,3.4,2.6],[2.25,3.4,3.25],[1.91,3.4,4.2],[1.42,4.75,7],[1.53,4.5,5.5],[1.44,4.75,6.5],[5.25,4.33,1.55],[2.1,3.6,3.25],[2.2,3.5,3.2],[2.15,3.3,3.5],[2.3,3.9,2.7],[1.91,4,3.5],[1.17,8,13],[2.25,3.5,3.1],[5.25,4.5,1.57],[2.35,3.6,2.8],[1.4,5,7],[2.1,3.7,3.25],[2.7,3.1,2.8],[3.5,3.8,2],[6.5,5.5,1.4],[2.25,3.5,3.2],[1.7,4,4.75],[1.4,5,7],[1.57,4.33,5.25],[3.6,4,1.91],[2.3,3.9,2.8],[2.1,3.25,3.75],[2,3.5,3.6],[3.5,3.75,2],[1.95,3.8,3.6],[2.9,3.6,2.3],[1.53,4.75,5.5],[2.55,3.6,2.55],[8,5,1.36],[2.2,3.5,3.2],[1.4,4.75,7],[2.25,3.1,3.5],[2.88,3.3,2.45],[2.5,4,2.5],[1.4,5,7],[2.15,3.6,3.25],[1.95,3.6,3.75],[3.4,4,2],[1.67,4.1,4.75],[1.4,5.5,6.5],[2.35,3.5,2.9],[1.48,4.75,6],[2.5,3.8,2.5],[3.8,4,1.85],[2.3,3.5,3],[4.33,4.5,1.67],[2.2,3.75,3],[4,4,1.75],[1.53,4.33,5.5],[1.36,5.25,7.5],[1.25,7,9.5],[1.73,4.1,4.33],[2.3,4.2,2.6],[2.45,3.3,2.9],[1.95,3.8,3.6],[2.1,4.2,2.88],[2.63,3.3,2.6],[3.75,3.8,1.91],[2.55,3.5,2.7],[1.67,4.33,4.5],[2.05,3.75,3.3],[1.45,5,5.75],[1.3,5.5,9.5],[2.15,4,2.8],[4.5,4.33,1.65],[2.75,3.6,2.4],[1.91,4.1,3.4],[1.75,4,4.33],[1.14,9.5,14],[3.4,4.33,1.85],[2.7,4,2.3],[1.91,4.33,3.4],[1.25,6.75,9.5],[4.33,4.5,1.67],[2.8,3.75,2.35],[2.6,3.9,2.4],[3.5,4,1.95],[3.5,3.6,2.05],[2.3,3.6,2.9],[1.33,5.25,8],[2.1,3.3,3.6],[3.3,3.4,2.2],[2.63,3.2,2.8],[2.38,3.3,3],[3.2,3.4,2.25],[7.5,5.5,1.36],[1.08,12,21],[1.38,5,7.5],[1.62,4.2,5],[1.4,5,7],[2.8,3.3,2.55],[3.75,3.6,1.95],[1.75,3.5,5],[2.1,3.6,3.3],[3.1,3.6,2.2],[1.85,3.75,4],[3.4,3.5,2.1],[2.2,3.4,3.25],[8.5,5.25,1.33],[3.4,3.5,2.1],[3.6,3.5,2.05],[1.55,4.33,5.5],[1.8,3.7,4.33],[2.63,3.6,2.5],[1.38,5,7.5],[1.67,3.7,5.25],[5,4.33,1.6],[1.75,3.8,4.5],[2.25,3.5,3.1],[2.25,3.4,3.2],[1.33,5.75,7.5],[1.62,4,5.5],[2.63,3.6,2.55],[1.44,4.33,7],[3.5,3.4,2.1],[2.63,3.5,2.6],[2.38,3.5,2.9],[2.35,3.5,2.9],[2.75,3.2,2.7],[2.25,3.5,3.1],[1.27,6,10],[3.7,4.1,1.9],[3.6,3.6,2],[5.5,4.1,1.6],[1.7,3.5,5.5],[1.14,8,15],[1.85,3.75,4],[3.1,3.25,2.38],[2.25,3.4,3.2],[2.7,3.2,2.7],[2.5,3.4,2.75],[1.73,3.9,4.5],[6.25,5,1.45],[1.85,3.75,4],[3.6,3.8,1.95],[1.9,3.7,4],[3.1,3.3,2.35],[1.9,3.7,3.9],[1.67,3.9,5.25],[4.5,3.9,1.75],[1.3,6,8.5],[2.45,3.4,2.8],[5.5,4,1.62],[1.33,5,9],[1.85,3.75,4],[2.38,3.25,3],[1.75,3.7,4.75],[1.6,3.8,6],[4.5,3.6,1.8],[1.65,4.1,5],[7.5,5.5,1.33],[1.83,3.9,4],[2.7,3.6,2.45],[1.3,5.5,9.5],[2.55,3.2,2.88],[2.1,3.4,3.5],[2.2,3.5,3.2],[2.1,3.75,3.3],[2.55,3.2,2.9],[9.5,6.5,1.25],[6.25,4.5,1.5],[3,3.5,2.3],[1.22,6.5,12],[4.75,4,1.7],[2.7,3.5,2.5],[1.75,3.8,4.5],[2.15,3.5,3.3],[1.25,6,10],[1.67,4.33,4.33],[4.75,4,1.67],[2.25,3.6,3],[1.48,4.33,6.5],[1.27,6,10],[1.91,3.6,4],[1.75,3.7,4.75],[3.1,3.5,2.25],[2.2,3.5,3.2],[1.44,4.75,6.5],[1.9,3.3,4.5],[2.05,3.9,3.2],[3,3.3,2.4],[2.55,3.1,2.9],[3.3,3.6,2.1],[2.63,3.5,2.55],[4.2,3.9,1.8],[3.8,3.75,1.91],[2.05,3.75,3.4],[2.63,3.7,2.45],[1.18,7.5,12],[3.9,3.4,2],[1.8,3.75,4.33],[2.63,3.3,2.7],[1.6,3.8,6],[1.62,4,5.5],[4,3.6,1.85],[5,4.33,1.6],[1.8,3.6,4.5],[1.6,3.9,6],[1.8,3.75,4.33],[4.75,3.8,1.75],[4.33,3.6,1.85],[2.45,3.3,2.88],[1.42,4.75,7],[3.3,3.9,2],[2.3,3.6,2.9],[4.75,3.9,1.7],[2.5,3.4,2.8],[1.3,6.5,7.5],[1.95,3.6,3.8],[2,3.5,3.75],[2.7,3.2,2.7],[3.2,3.5,2.2],[2.15,3.2,3.6],[1.83,3.75,4.1],[10,6.5,1.25],[2.4,3.4,2.88],[1.6,4.1,5.25],[4.5,3.6,1.8],[1.48,4.5,6.25],[1.73,3.7,4.75],[1.9,3.75,3.75],[2.45,3.1,2.55],[2,3.75,3.5],[2.7,3.4,2.6],[1.9,3.7,4],[1.22,6.5,12],[1.91,3.4,4.2],[2.05,3.3,3.7],[1.8,3.5,4.75],[1.17,7.5,17],[1.65,4.2,4.75],[1.3,5.75,8],[1.42,4.5,7.5],[1.95,3.5,3.9],[5.75,4,1.6],[1.53,4.33,5.75],[3,3.2,2.45],[1.67,3.9,5.25],[1.67,4,5],[11,5.5,1.29],[1.85,3.7,4.1],[3.4,3.8,2],[2,3.75,3.4],[2.9,3.5,2.38],[2.8,3.1,2.7],[4.75,3.9,1.7],[1.83,3.4,4.75],[2,3.5,3.6],[1.4,5,7],[3.8,3.8,1.9],[1.83,3.5,4.5],[2,3.9,3.3],[1.91,3.7,3.8],[2.1,3.3,3.6],[2.1,3.3,3.7],[1.75,3.6,5],[4.75,4.5,1.62],[6,4.2,1.55],[1.75,3.8,4.5],[2.2,3.1,3.5],[4.75,3.75,1.73],[3.1,3.75,2.15],[3.4,3.2,2.25],[2.45,3.3,2.9],[4,3.5,1.91],[1.42,5.25,6],[7,5,1.4],[1.48,4.33,7],[1.67,4.2,4.5],[1.73,3.6,5],[4,3.6,1.85],[3.4,3.1,2.3],[1.91,3.2,4.5],[2.88,3,2.63],[1.62,3.9,5.5],[3.8,3.6,1.9],[1.65,4.33,4.75],[1.85,3.4,4.5],[1.14,9,13],[2.9,3.4,2.35],[4.2,3.5,1.85],[2.4,3.3,2.9],[2.05,3.6,3.4],[2.3,3.6,2.9],[2.2,3.6,3.1],[1.95,3.5,3.7],[1.5,4.33,6.5],[8,6.25,1.3],[2.4,3.4,2.9],[1.45,4.5,7],[2.05,3.25,3.9],[3.6,3.4,2.1],[1.95,3.6,3.8],[1.36,5.5,7],[2.2,3,3.6],[3.6,3.3,2.1],[2.9,3.5,2.35],[1.27,5.75,11],[1.91,3.5,4.1],[1.55,4.1,6],[2.88,3.5,2.35],[1.67,3.8,5.25],[1.42,5,6.5],[4.2,3.7,1.85],[2.9,3.3,2.5],[1.67,4.2,4.5],[1.75,3.7,4.75],[3.75,3.4,2],[4,3.4,1.95],[2.2,3.4,3.25],[1.22,6.5,12],[1.95,3.1,4.5],[2.38,3.1,3.25],[8,5.5,1.36],[2.75,3.5,2.5],[1.91,3.75,3.8],[2,3.3,4],[1.33,5.5,8.5],[3.6,3.6,2],[1.25,6.25,11],[1.85,3.7,4.1],[3.1,3.5,2.25],[2.63,3.4,2.63],[4.5,3.6,1.8],[2.6,3.1,3],[2.25,3.3,3.3],[2.8,3.3,2.55],[2.15,3.75,3.1],[3.9,3.8,1.9],[1.22,6.25,12],[2,3.3,4],[1.36,4.75,8.5],[1.91,3.3,4.33],[3.2,3.3,2.3],[1.67,3.8,5.25],[1.5,4.5,5.75],[4.5,4,1.73],[2.88,3.1,2.63],[1.5,4.33,6.5],[1.53,4.33,6],[3.5,3.5,2.05],[2.35,3.3,3.1],[2.63,3.75,2.5],[1.3,6,8.5],[1.18,7,13],[5.5,4.2,1.55],[1.65,3.9,5.25],[10,6,1.27],[3.3,3.8,2.05],[2.1,3.6,3.2],[1.67,4,5],[4,3.6,1.91],[1.42,4.75,7.5],[1.48,4.5,6.5],[4.33,4.1,1.73],[1.3,5.75,8],[6.5,5.5,1.4],[4,4.2,1.75],[1.42,4.75,7.5],[1.67,3.7,5.5],[2,3.5,3.75],[2.63,3.5,2.6],[2.1,3.5,2.88],[1.45,4.75,6.5],[2.9,3.4,2.4],[2.45,3.4,2.88],[3.5,3.7,2],[3.2,3.7,2.15],[2.3,3.8,2.75],[1.17,7,13],[1.5,4.75,5.75],[4.33,4,1.73],[2.63,3.6,2.5],[3.4,4,1.95],[1.8,3.6,4],[1.36,4.5,7.5],[2.55,3.3,2.5],[1.73,4,4.1],[1.95,3.7,3.25],[2.5,3.5,2.5],[1.36,5,7],[5.5,4.1,1.53],[2.88,3.8,2.1]];
+
+// ===== 配置 =====
+var CONFIG = {
+  MATCH_COUNT: 21,
+  MARGIN: 0.08,
+  MIN_BET: 1
+};
+
+// ===== 虚构球队名生成器（100地名×100队名=1万种组合，篮球队名风格） =====
+var TEAM_CITY = [
+  "北城","南都","东山","西岭","中原","云端","海底","星空","月影","日光",
+  "翠林","黄沙","紫霄","青云","赤焰","碧波","银翼","金羽","铁壁","钢锋",
+  "幽谷","荒漠","雪山","火山","森林","草原","海岸","山巅","破晓","黄昏",
+  "午夜","黎明","极光","流星","彗星","星云","天域","地宫","水镜","火凤",
+  "土龙","风刃","雷锤","电鞭","雨幕","霜华","雾隐","霞飞","露凝","霜降",
+  "雪飘","冰封","河城","海城","山城","花城","树城","石城","金城","玉城",
+  "龙城","虎城","雀城","武城","羚城","凤城","雕城","马城","牛城","雁城",
+  "鹰城","狼城","熊城","鹿城","鲤城","鹤城","龟城","蛇城","鸦城","燕城",
+  "橘城","枫城","林城","沙城","霄城","云城","焰城","波城","翼城","羽城",
+  "壁城","锋城","谷城","漠城","山堡","火堡","林堡","原堡","岸堡","巅堡"
+];
+var TEAM_NAME = [
+  "雷霆","勇士","热火","公牛","湖人","快船","篮网","雄鹿","老鹰","黄蜂",
+  "魔术","奇才","猛龙","骑士","活塞","步行者","掘金","爵士","开拓者","国王",
+  "太阳","灰熊","马刺","火箭","独行侠","先锋","战士","雄狮","猛虎","飞龙",
+  "巨象","猎豹","苍鹰","鸿雁","锦鲤","仙鹤","神龟","白蛇","青牛","黑鸦",
+  "黄雀","紫燕","红鹰","蓝鲨","绿蟒","金雕","银狼","铜虎","铁狮","风暴",
+  "烈焰","寒冰","翠林","黄沙","紫霄","青云","赤焰","碧波","银翼","金羽",
+  "铁壁","钢锋","幽谷","荒漠","雪山","火山","森林","草原","海岸","山巅",
+  "破晓","黄昏","午夜","黎明","极光","流星","彗星","星云","天域","地宫",
+  "水镜","火凤","土龙","风刃","雷锤","电鞭","雨幕","霜华","雾隐","霞飞",
+  "露凝","霜降","雪飘","冰封","河伯","海神","山鬼","花仙","树精","石灵"
+];
+
+function generateTeamName() {
+  var city = pick(TEAM_CITY);
+  var name = pick(TEAM_NAME);
+  var r = Math.random();
+  if (r < 0.35) {
+    // 只用队名（2-3个字）
+    return name;
+  } else {
+    // 地名 + 队名（4-5个字）
+    return city + name;
+  }
+}
+
+function generateTwoTeams() {
+  var t1 = generateTeamName();
+  var t2 = generateTeamName();
+  while (t2 === t1) t2 = generateTeamName();
+  return [t1, t2];
+}
+
+// ===== 工具函数 =====
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function formatMoney(n) { return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function genId() {
+  return "m_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+}
+function findMatch(matchId) {
+  for (var i = 0; i < matches.length; i++) {
+    if (matches[i].id === matchId) return matches[i];
+  }
+  return null;
+}
+
+// ===== 概率计算工具（直接赔率倒数，不计算抽水） =====
+function calculateProbabilities(odds) {
+  var pH = 1 / odds.home;
+  var pD = 1 / odds.draw;
+  var pA = 1 / odds.away;
+  var total = pH + pD + pA;
+  return { home: pH / total, draw: pD / total, away: pA / total };
+}
+
+// ===== 比赛生成（使用真实B365赔率） =====
+function generateMatch() {
+  var teams = generateTwoTeams();
+  var oddsPair = pick(REAL_ODDS);
+  var odds = { home: oddsPair[0], draw: oddsPair[1], away: oddsPair[2] };
+  var probs = calculateProbabilities(odds);
+
+  return {
+    id: genId(),
+    home: teams[0],
+    away: teams[1],
+    homeStrength: randInt(55, 92),
+    awayStrength: randInt(55, 92),
+    probabilities: probs,
+    odds: odds,
+    bets: [],
+    result: null,
+    settled: false,
+    profit: 0
+  };
+}
+
+function generateMatches(count) {
+  var arr = [];
+  for (var i = 0; i < count; i++) arr.push(generateMatch());
+  return arr;
+}
+
+// ===== 开奖（按照赔率比值随机） =====
+function settleMatch(match) {
+  if (match.settled) return;
+  match.settled = true;
+  // 按赔率倒数随机（除去抽水后的真实概率）
+  var odds = match.odds;
+  var inv = [1/odds.home, 1/odds.draw, 1/odds.away];
+  var sum = inv[0] + inv[1] + inv[2];
+  var r = Math.random() * sum;
+  match.result = r < inv[0] ? "home" : (r < inv[0]+inv[1] ? "draw" : "away");
+
+  match.totalStake = 0;
+  match.winAmount = 0;
+  match.profit = 0;
+  match.bets.forEach(function(bet) {
+    match.totalStake += bet.amount;
+    if (bet.option === match.result) {
+      var winnings = bet.amount * bet.odds;
+      match.winAmount += winnings;
+      match.profit += winnings - bet.amount;
+      balance += winnings;
+    } else {
+      match.profit -= bet.amount;
+    }
+  });
+}
+
+// ===== 投注 =====
+function placeBet(matchId, option, amount) {
+  var match = findMatch(matchId);
+  if (!match) return { success: false, message: "比赛不存在" };
+  if (match.settled) return { success: false, message: "该比赛已开奖" };
+  amount = parseFloat(amount);
+  if (isNaN(amount) || amount <= 0) return { success: false, message: "请输入有效金额" };
+  if (amount > balance) return { success: false, message: "余额不足" };
+
+  balance -= amount;
+  match.bets.push({
+    id: genId(),
+    option: option,
+    amount: amount,
+    odds: match.odds[option]
+  });
+  return { success: true };
+}
+
+// ===== 按选项合并投注 =====
+function getMergedBets(match) {
+  var merged = {};
+  match.bets.forEach(function(bet) {
+    if (!merged[bet.option]) {
+      merged[bet.option] = { totalAmount: 0, totalPotential: 0, count: 0 };
+    }
+    var item = merged[bet.option];
+    item.totalAmount += bet.amount;
+    item.totalPotential += bet.amount * bet.odds;
+    item.count++;
+  });
+  return merged;
+}
+
+// ===== 粒子特效（爆炸式） =====
+function createParticles(card, isWin) {
+  var container = document.createElement("div");
+  container.className = "particle-container";
+  var colors = isWin
+    ? ["#52c41a", "#73d13d", "#95de64", "#b7eb8f", "#ffffff"]
+    : ["#ff4d4f", "#ff7875", "#ffa39e", "#ffccc7", "#ffffff"];
+  var frag = document.createDocumentFragment();
+  var count = 30;
+  for (var i = 0; i < count; i++) {
+    var p = document.createElement("div");
+    p.className = "particle";
+    var size = rand(5, 18);
+    var angle = rand(0, Math.PI * 2);
+    var distance = rand(80, 220);
+    var color = pick(colors);
+    p.style.cssText =
+      "width:" + size + "px;height:" + size + "px;" +
+      "background:" + color + ";" +
+      "box-shadow:0 0 " + (size * 1.5) + "px " + color + ";" +
+      "left:" + rand(10, 90) + "%;top:" + rand(20, 80) + "%;" +
+      "--tx:" + (Math.cos(angle) * distance) + "px;" +
+      "--ty:" + (Math.sin(angle) * distance - 50) + "px;" +
+      "animation-delay:" + rand(0, 0.1) + "s;" +
+      "animation-duration:" + rand(0.7, 1.1) + "s;";
+    frag.appendChild(p);
+  }
+  container.appendChild(frag);
+  card.appendChild(container);
+  setTimeout(function() { container.remove(); }, 1500);
+}
+
+// ===== 比赛卡片创建（innerHTML模板，减少DOM操作） =====
+var OPTION_LABELS = { home: "胜", draw: "平", away: "负" };
+var OPTION_KEYS = ["home", "draw", "away"];
+
+function createMatchCard(match, index) {
+  var card = document.createElement("div");
+  card.className = "tb-card";
+  card.id = "card_" + match.id;
+
+  var hasBet = match.bets.length > 0 && !match.settled;
+  var isWin = match.settled && match.bets.length > 0 && match.winAmount > match.totalStake;
+
+  if (hasBet) card.className += " has-bet";
+  if (match.settled && match.bets.length > 0) {
+    card.className += isWin ? " result-win" : " result-lose";
+  }
+  // 全局同时刷新，不设置逐个延迟
+  // 有投注的卡片不参与刷新闪动动画
+  if (hasBet) card.style.animation = "none";
+
+  // 已开奖且有投注：只显示大字体结果
+  if (match.settled && match.bets.length > 0) {
+    var displayAmount = isWin ? match.winAmount : (match.winAmount - match.totalStake);
+    var sign = displayAmount > 0 ? "+¥" : "-¥";
+    card.innerHTML =
+      '<div class="tb-big-result full ' + (isWin ? "win" : "lose") + '">' +
+        '<div class="big-result-text">' + (isWin ? "中" : "未中") + '</div>' +
+        '<div class="big-result-amount">' + sign + formatMoney(Math.abs(displayAmount)) + '</div>' +
+        '<div class="big-result-match">' + match.home + ' vs ' + match.away + '</div>' +
+      '</div>';
+    return card;
+  }
+
+  // 计算各选项投注额
+  var stakes = { home: 0, draw: 0, away: 0 };
+  match.bets.forEach(function(b) { stakes[b.option] += b.amount; });
+
+  // 构建赔率按钮HTML
+  var oddsHtml = "";
+  OPTION_KEYS.forEach(function(option) {
+    var btnClass = "tb-odds-btn";
+    var stakeHtml = "";
+    if (match.settled) {
+      btnClass += " disabled";
+      if (match.result === option) btnClass += " result-hit";
+    }
+    if (stakes[option] > 0 && !match.settled) {
+      btnClass += " has-bet";
+      stakeHtml = '<div class="odds-stake">已投¥' + formatMoney(stakes[option]) + '</div>';
+    }
+    var disabledAttr = match.settled ? "disabled" : "";
+    var dataAttr = 'data-match="' + match.id + '" data-option="' + option + '"';
+    oddsHtml +=
+      '<button class="' + btnClass + '" ' + disabledAttr + ' ' + dataAttr + '>' +
+        '<div class="odds-label">' + OPTION_LABELS[option] + '</div>' +
+        '<div class="odds-value">' + match.odds[option].toFixed(2) + '</div>' +
+        stakeHtml +
+      '</button>';
+  });
+
+  // 投注信息
+  var infoHtml = "";
+  if (hasBet) {
+    var totalStake = 0;
+    match.bets.forEach(function(b) { totalStake += b.amount; });
+    var merged = getMergedBets(match);
+    var maxPotential = 0;
+    OPTION_KEYS.forEach(function(option) {
+      if (merged[option] && merged[option].totalPotential > maxPotential) {
+        maxPotential = merged[option].totalPotential;
+      }
+    });
+    infoHtml =
+      '<div class="tb-bet-info">' +
+        '<div class="tb-bet-total"><span class="label">累计投注</span><span class="amount">' + formatMoney(totalStake) + '</span></div>' +
+        '<div class="tb-bet-potential"><span class="label">最高可赢</span><span class="value">¥' + formatMoney(maxPotential) + '</span></div>' +
+      '</div>';
+  }
+
+  card.innerHTML =
+    '<div class="tb-teams">' +
+      '<div class="tb-team home"><div class="tb-team-name">' + match.home + '</div></div>' +
+      '<div class="tb-vs">VS</div>' +
+      '<div class="tb-team away"><div class="tb-team-name">' + match.away + '</div></div>' +
+    '</div>' +
+    '<div class="tb-odds-row">' + oddsHtml + '</div>' +
+    infoHtml;
+
+  return card;
+}
+// ===== 渲染：全量渲染（使用DocumentFragment减少重排） =====
+function renderAllMatches() {
+  var grid = DOM.grid;
+  var frag = document.createDocumentFragment();
+  matches.forEach(function(match, index) {
+    frag.appendChild(createMatchCard(match, index));
+  });
+  grid.innerHTML = "";
+  grid.appendChild(frag);
+  document.getElementById("matchCount").textContent = "共" + matches.length + "场";
+}
+
+// ===== 渲染：只更新单张卡片（避免白屏） =====
+function updateMatchCard(matchId) {
+  var match = findMatch(matchId);
+  if (!match) return;
+  var oldCard = document.getElementById("card_" + matchId);
+  if (!oldCard) return;
+  var newCard = createMatchCard(match);
+  newCard.style.animation = "none";
+  oldCard.parentNode.replaceChild(newCard, oldCard);
+}
+
+// ===== 渲染：余额（中了带弹跳动画，没中只更新数字） =====
+function renderBalance(animate) {
+  var el = DOM.balance;
+  el.textContent = formatMoney(balance);
+  if (animate) {
+    el.classList.remove("bump");
+    void el.offsetWidth;
+    el.classList.add("bump");
+  } else {
+    // 没中时确保移除任何动画类，只静默更新数字
+    el.classList.remove("bump");
+  }
+}
+
+function updateDrawButton() {
+  var btn = DOM.drawBtn;
+  var pending = 0;
+  matches.forEach(function(m) { if (m.bets.length > 0 && !m.settled) pending++; });
+  btn.disabled = pending === 0;
+  btn.textContent = pending > 0 ? "一键开奖(" + pending + "场)" : "一键开奖";
+}
+
+// ===== 弹窗 =====
+function openBetModal(matchId, option) {
+  var match = findMatch(matchId);
+  if (!match) { showToast("比赛数据异常", "error"); return; }
+  if (match.settled) { showToast("该比赛已开奖", "info"); return; }
+
+  currentBet = { matchId: matchId, option: option };
+  var optionLabels = { home: "主胜", draw: "平局", away: "客胜" };
+  var odds = match.odds[option];
+
+  var summary = document.getElementById("betSummary");
+  summary.innerHTML =
+    '<div class="tb-summary-row"><span class="label">对阵</span><span class="value"></span></div>' +
+    '<div class="tb-summary-row"><span class="label">选项</span><span class="value gold"></span></div>' +
+    '<div class="tb-summary-row"><span class="label">赔率</span><span class="value gold"></span></div>';
+  summary.querySelectorAll(".value")[0].textContent = match.home + " vs " + match.away;
+  summary.querySelectorAll(".value")[1].textContent = optionLabels[option];
+  summary.querySelectorAll(".value")[2].textContent = odds.toFixed(2);
+
+  document.getElementById("betAmountInput").value = "";
+  document.getElementById("betAmountInput").classList.remove("error");
+  var hint = document.getElementById("betHint");
+  hint.className = "tb-form-hint";
+  hint.innerHTML = '可用余额：<span id="availableBalance">' + formatMoney(balance) + '</span>';
+  document.getElementById("betModal").classList.add("active");
+  setTimeout(function() { document.getElementById("betAmountInput").focus(); }, 150);
+}
+
+function closeBetModal() {
+  document.getElementById("betModal").classList.remove("active");
+  currentBet = null;
+}
+
+function openBalanceModal() {
+  document.getElementById("newBalanceInput").value = balance.toFixed(2);
+  document.getElementById("balanceModal").classList.add("active");
+}
+function closeBalanceModal() {
+  document.getElementById("balanceModal").classList.remove("active");
+}
+
+// ===== Toast =====
+function showToast(message, type) {
+  type = type || "info";
+  var container = DOM.toastContainer;
+  var toast = document.createElement("div");
+  toast.className = "tb-toast " + type;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(function() {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(40px) scale(0.9)";
+    toast.style.transition = "all 0.3s ease";
+    setTimeout(function() { toast.remove(); }, 300);
+  }, 2500);
+}
+
+// ===== 验证输入 =====
+function validateBetInput() {
+  var input = document.getElementById("betAmountInput");
+  var hint = document.getElementById("betHint");
+  var amount = parseFloat(input.value);
+  if (isNaN(amount) || amount <= 0) {
+    input.classList.remove("error");
+    hint.className = "tb-form-hint";
+    hint.innerHTML = '可用余额：<span id="availableBalance">' + formatMoney(balance) + '</span>';
+    return;
+  }
+  if (amount > balance) {
+    input.classList.add("error");
+    hint.className = "tb-form-hint error";
+    hint.textContent = "超出可用余额 ¥" + formatMoney(amount - balance);
+  } else {
+    input.classList.remove("error");
+    hint.className = "tb-form-hint";
+    var odds = 1;
+    if (currentBet) {
+      var match = findMatch(currentBet.matchId);
+      if (match) odds = match.odds[currentBet.option];
+    }
+    hint.innerHTML = '最高可赢 <span class="highlight">¥' + formatMoney(amount * odds) + '</span> · 可用余额：¥' + formatMoney(balance);
+  }
+}
+
+// ===== 顺序开奖（带动画） =====
+var isDrawing = false;
+
+function sequentialDraw() {
+  if (isDrawing) return;
+  isDrawing = true;
+
+  // 瞬间跳到顶部
+  window.scrollTo(0, 0);
+
+  // 找出有投注的比赛
+  var betMatches = [];
+  matches.forEach(function(m) { if (m.bets.length > 0 && !m.settled) betMatches.push(m); });
+  if (betMatches.length === 0) {
+    isDrawing = false;
+    return;
+  }
+
+  // 禁用按钮
+  document.getElementById("drawAllBtn").disabled = true;
+  document.getElementById("refreshAllBtn").disabled = true;
+
+  // 有投注的比赛移到前面（只排序，不改变数据）
+  var sortedIds = betMatches.map(function(m) { return m.id; });
+  matches.sort(function(a, b) {
+    var aBet = a.bets.length > 0 && !a.settled ? 1 : 0;
+    var bBet = b.bets.length > 0 && !b.settled ? 1 : 0;
+    return bBet - aBet;
+  });
+  renderAllMatches();
+
+  var idx = 0;
+
+  function drawNext() {
+    if (idx >= betMatches.length) {
+      // 全部开奖完成（每场已单独更新余额，这里不再重复调用）
+      updateDrawButton();
+      document.getElementById("refreshAllBtn").disabled = false;
+
+      // 延迟后替换已开奖比赛
+      setTimeout(function() {
+        for (var i = 0; i < matches.length; i++) {
+          if (matches[i].settled) {
+            matches[i] = generateMatch();
+          }
+        }
+        renderAllMatches();
+        updateDrawButton();
+        isDrawing = false;
+      }, 1000);
+      return;
+    }
+
+    var match = betMatches[idx];
+    var card = document.getElementById("card_" + match.id);
+
+    if (card) {
+      // 开奖中脉冲
+      card.classList.add("drawing");
+
+      setTimeout(function() {
+        card.classList.remove("drawing");
+        settleMatch(match);
+
+        // 中奖判断：y > x（得到的钱 > 投入的钱）
+        var win = match.winAmount > match.totalStake;
+
+        // 清除有投注卡片的内联animation:none，让flash动画能生效
+        card.style.animation = "";
+
+        // 闪烁两下（高亮醒目）
+        card.classList.add(win ? "flash-win" : "flash-lose");
+
+        setTimeout(function() {
+          card.classList.remove(win ? "flash-win" : "flash-lose");
+
+          // 移除"已投注"斜幅，避免盖到结果卡
+          card.classList.remove("has-bet");
+
+          // 更新卡片内容（显示大字体结果卡）
+          var newCard = createMatchCard(match);
+          newCard.className = card.className;
+          newCard.style.animation = "none";
+          card.parentNode.replaceChild(newCard, card);
+          card = newCard;
+
+          // 粒子特效（爆炸式）
+          createParticles(card, win);
+
+          // 爆炸消失特效
+          setTimeout(function() {
+            card.classList.add(win ? "explode-win" : "explode-lose");
+          }, 100);
+
+          // 爆炸完成后更新余额（中了有弹跳动画，没中只更新数字），然后下一场
+          setTimeout(function() {
+            renderBalance(win);
+            idx++;
+            drawNext();
+          }, 650);
+        }, 650);
+      }, 500);
+    } else {
+      idx++;
+      drawNext();
+    }
+  }
+
+  drawNext();
+}
+
+// ===== 事件绑定 =====
+function bindEvents() {
+  // 事件委托：赔率按钮点击（减少事件监听器数量）
+  document.getElementById("matchGrid").addEventListener("click", function(e) {
+    var btn = e.target.closest(".tb-odds-btn");
+    if (btn && !btn.disabled) {
+      openBetModal(btn.dataset.match, btn.dataset.option);
+    }
+  });
+
+  // 投注弹窗
+  document.getElementById("cancelBetBtn").addEventListener("click", closeBetModal);
+  document.getElementById("betModal").addEventListener("click", function(e) {
+    if (e.target === this) closeBetModal();
+  });
+  document.getElementById("betAmountInput").addEventListener("input", validateBetInput);
+
+  document.getElementById("confirmBetBtn").addEventListener("click", function() {
+    if (!currentBet) return;
+    var amount = parseFloat(document.getElementById("betAmountInput").value);
+    if (isNaN(amount) || amount < CONFIG.MIN_BET) {
+      showToast("请输入有效的投注金额", "error");
+      return;
+    }
+    if (amount > balance) {
+      showToast("余额不足，当前可用 ¥" + formatMoney(balance), "error");
+      return;
+    }
+    var result = placeBet(currentBet.matchId, currentBet.option, amount);
+    if (result.success) {
+      var matchId = currentBet.matchId;
+      closeBetModal();
+      renderBalance(true);
+      updateMatchCard(matchId);
+      updateDrawButton();
+    } else {
+      showToast(result.message, "error");
+    }
+  });
+
+  // 余额修改
+  document.getElementById("editBalanceBtn").addEventListener("click", openBalanceModal);
+  document.getElementById("cancelBalanceBtn").addEventListener("click", closeBalanceModal);
+  document.getElementById("balanceModal").addEventListener("click", function(e) {
+    if (e.target === this) closeBalanceModal();
+  });
+  document.getElementById("saveBalanceBtn").addEventListener("click", function() {
+    var newBalance = parseFloat(document.getElementById("newBalanceInput").value);
+    if (isNaN(newBalance) || newBalance < 0) {
+      showToast("请输入有效的余额（≥0）", "error");
+      return;
+    }
+    balance = newBalance;
+    closeBalanceModal();
+    renderBalance(true);
+    showToast("余额已更新为 ¥" + formatMoney(newBalance), "success");
+  });
+
+  // 一键开奖（顺序开奖带动画）
+  document.getElementById("drawAllBtn").addEventListener("click", sequentialDraw);
+
+  // 刷新比赛（只刷新没投注过的）
+  document.getElementById("refreshAllBtn").addEventListener("click", function() {
+    if (isDrawing) return;
+    for (var i = 0; i < matches.length; i++) {
+      if (matches[i].bets.length === 0) {
+        matches[i] = generateMatch();
+      }
+    }
+    renderAllMatches();
+    renderBalance();
+    updateDrawButton();
+  });
+
+  // ESC 关闭弹窗
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") { closeBetModal(); closeBalanceModal(); }
+    if (e.key === "Enter" && document.getElementById("betModal").classList.contains("active")) {
+      document.getElementById("confirmBetBtn").click();
+    }
+  });
+}
+
+// ===== 全局状态 =====
+var balance = 10000;
+var matches = [];
+var currentBet = null;
+
+// ===== 初始化 =====
+function init() {
+  cacheDOM();
+  matches = generateMatches(CONFIG.MATCH_COUNT);
+  bindEvents();
+  renderAllMatches();
+  renderBalance();
+  updateDrawButton();
+}
+
+init();
+</script>
+</body>
+</html>
