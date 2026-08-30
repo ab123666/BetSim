@@ -166,7 +166,6 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.25s ease;
-    backdrop-filter: blur(10px);
   }
   .tb-btn-edit:hover {
     background: #fff;
@@ -219,7 +218,6 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.25s ease;
-    backdrop-filter: blur(10px);
   }
   .tb-btn-outline:hover {
     background: rgba(255,255,255,0.25);
@@ -358,20 +356,48 @@
     50% { box-shadow: 0 0 0 3px rgba(255, 80, 0, 0.25); }
   }
 
-  /* 中奖闪烁 - 高亮醒目（性能优化版） */
-  .tb-card.flash-win {
-    animation: flashWin 0.3s ease-in-out 2;
-    z-index: 5;
-    will-change: transform, background-color;
+  /* 闪烁覆盖层（GPU加速：只动画opacity，不改变background） */
+  .tb-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+    border-radius: inherit;
   }
-  @keyframes flashWin {
-    0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
-    50% {
-      background: #52c41a;
-      border-color: #237804;
-      box-shadow: 0 0 40px rgba(82, 196, 26, 0.8);
-      transform: scale(1.06);
-    }
+
+  /* 中奖闪烁 - 覆盖层opacity + 卡片scale，完全GPU合成 */
+  .tb-card.flash-win {
+    animation: flashScale 0.3s ease-in-out 2;
+    background: transparent;
+    border-color: transparent;
+    z-index: 5;
+    will-change: transform;
+  }
+  .tb-card.flash-win::before {
+    background: #52c41a;
+    box-shadow: 0 0 40px rgba(82, 196, 26, 0.8);
+    animation: flashOverlay 0.3s ease-in-out 2;
+  }
+  .tb-card.flash-lose {
+    animation: flashScale 0.3s ease-in-out 2;
+    background: transparent;
+    border-color: transparent;
+    z-index: 5;
+    will-change: transform;
+  }
+  .tb-card.flash-lose::before {
+    background: #ff4d4f;
+    box-shadow: 0 0 40px rgba(255, 77, 79, 0.8);
+    animation: flashOverlay 0.3s ease-in-out 2;
+  }
+  @keyframes flashScale {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+  @keyframes flashOverlay {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
   }
   .tb-card.flash-win .tb-team-name,
   .tb-card.flash-win .odds-label,
@@ -382,21 +408,6 @@
   .tb-card.flash-win .tb-bet-total .amount,
   .tb-card.flash-win .tb-bet-potential .value {
     color: #fff !important;
-  }
-
-  .tb-card.flash-lose {
-    animation: flashLose 0.3s ease-in-out 2;
-    z-index: 5;
-    will-change: transform, background-color;
-  }
-  @keyframes flashLose {
-    0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
-    50% {
-      background: #ff4d4f;
-      border-color: #a8071a;
-      box-shadow: 0 0 40px rgba(255, 77, 79, 0.8);
-      transform: scale(1.06);
-    }
   }
   .tb-card.flash-lose .tb-team-name,
   .tb-card.flash-lose .odds-label,
@@ -409,7 +420,7 @@
     color: #fff !important;
   }
 
-  /* 爆炸消失特效（性能优化版：去掉filter，只用transform和opacity） */
+  /* 爆炸消失特效（只用transform和opacity，完全GPU合成） */
   .tb-card.explode-win {
     animation: explodeWin 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     z-index: 5;
@@ -417,7 +428,7 @@
   }
   @keyframes explodeWin {
     0% { opacity: 1; transform: scale(1.06); }
-    25% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 60px rgba(82, 196, 26, 0.6); }
+    25% { opacity: 1; transform: scale(1.2); }
     60% { opacity: 0.5; transform: scale(1.4); }
     100% { opacity: 0; transform: scale(1.6); }
   }
@@ -428,7 +439,7 @@
   }
   @keyframes explodeLose {
     0% { opacity: 1; transform: scale(1.06); }
-    25% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 60px rgba(255, 77, 79, 0.6); }
+    25% { opacity: 1; transform: scale(1.2); }
     60% { opacity: 0.5; transform: scale(1.4); }
     100% { opacity: 0; transform: scale(1.6); }
   }
@@ -475,14 +486,10 @@
     .tb-card {
       contain: layout style paint;
     }
-    /* 闪烁动画去掉box-shadow */
-    @keyframes flashWin {
-      0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
-      50% { background: #52c41a; border-color: #237804; transform: scale(1.05); }
-    }
-    @keyframes flashLose {
-      0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
-      50% { background: #ff4d4f; border-color: #a8071a; transform: scale(1.05); }
+    /* 闪烁动画：手机端scale稍小，覆盖层保持不变 */
+    @keyframes flashScale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
     }
   }
 
@@ -737,8 +744,7 @@
   .tb-modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.55);
     display: flex;
     align-items: center;
     justify-content: center;
