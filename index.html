@@ -1872,12 +1872,16 @@ function sequentialDraw() {
     });
   }
 
-  // 强制resume后再开始开奖（即使state是running，resume也能确保音频硬件完全就绪）
-  wakeAudio();
-  if (audioCtx) {
-    audioCtx.resume().then(startDraw).catch(startDraw);
-  } else {
+  // 音频就绪后开始开奖（有静音保活，通常都是running状态）
+  if (audioCtx && audioCtx.state === 'running') {
     startDraw();
+  } else {
+    wakeAudio();
+    if (audioCtx) {
+      audioCtx.resume().then(startDraw).catch(startDraw);
+    } else {
+      startDraw();
+    }
   }
 }
 
