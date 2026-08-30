@@ -299,8 +299,11 @@
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
     border: 1px solid #f0f0f0;
     position: relative;
-    animation: cardEnter 0.3s ease-out backwards;
     will-change: transform;
+  }
+  /* 新卡片入场动画（仅未开奖的新卡片使用） */
+  .tb-card.card-enter {
+    animation: cardEnter 0.3s ease-out backwards;
   }
   @keyframes cardEnter {
     from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -336,12 +339,12 @@
   /* 已开奖卡片结果背景色（占满整个框） */
   .tb-card.result-win {
     background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
-    border-color: #389e0d;
+    border: none;
     box-shadow: 0 4px 20px rgba(82, 196, 26, 0.4);
   }
   .tb-card.result-lose {
     background: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%);
-    border-color: #cf1322;
+    border: none;
     box-shadow: 0 4px 20px rgba(255, 77, 79, 0.4);
   }
 
@@ -654,13 +657,12 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* 大字体开奖结果（占满框框） */
+  /* 大字体开奖结果（占满框框，只做文字容器，背景由卡片提供） */
   .tb-big-result {
     margin: 0 18px 18px;
     padding: 30px 20px;
     border-radius: 12px;
     text-align: center;
-    animation: bigResultPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     overflow: hidden;
   }
@@ -668,19 +670,30 @@
     margin: 0;
     border-radius: 0;
     padding: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 220px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: transparent;
-    box-shadow: none;
+    background: transparent !important;
+    box-shadow: none !important;
+    z-index: 2;
+    pointer-events: none;
+  }
+  /* 开奖结果动画：整个卡片一起放大缩小，视觉上是一张完整的红绿卡 */
+  .tb-card.result-win,
+  .tb-card.result-lose {
+    animation: bigResultPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform, opacity;
+    min-height: 240px; /* 保持和投注卡片一致的高度，避免开奖时高度跳动 */
   }
   @keyframes bigResultPop {
     0% { transform: scale(0.5); opacity: 0; }
-    60% { transform: scale(1.1); }
+    60% { transform: scale(1.05); }
     100% { transform: scale(1); opacity: 1; }
   }
   .tb-big-result.win {
@@ -700,7 +713,7 @@
     pointer-events: none;
   }
   .big-result-text {
-    font-size: 56px;
+    font-size: 72px;
     font-weight: 900;
     color: #fff;
     line-height: 1.1;
@@ -710,7 +723,7 @@
     z-index: 1;
   }
   .big-result-amount {
-    font-size: 28px;
+    font-size: 40px;
     font-weight: 800;
     color: #fff;
     margin-top: 8px;
@@ -1547,6 +1560,9 @@ function createMatchCard(match, index) {
   if (hasBet) card.className += " has-bet";
   if (match.settled && match.bets.length > 0) {
     card.className += isWin ? " result-win" : " result-lose";
+  } else {
+    // 未开奖的新卡片使用入场动画
+    card.className += " card-enter";
   }
   // 全局同时刷新，不设置逐个延迟
   // 有投注的卡片不参与刷新闪动动画
@@ -1824,8 +1840,11 @@ function sequentialDraw() {
 
             // 更新卡片内容（显示大字体结果卡）
             var newCard = createMatchCard(match);
-            newCard.className = card.className;
-            newCard.style.animation = "none";
+            // createMatchCard已根据match.settled设置result-win/lose类和bigResultPop动画
+            // 移除可能从旧卡片复制的入场动画类
+            newCard.classList.remove("card-enter");
+            // 保持和投注卡片完全一致的高度，避免开奖时高度跳动
+            newCard.style.height = card.offsetHeight + "px";
             card.parentNode.replaceChild(newCard, card);
             card = newCard;
 
