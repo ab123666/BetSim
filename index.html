@@ -20,9 +20,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
   }
   body {
     padding-top: env(safe-area-inset-top);
@@ -145,6 +142,7 @@
   .tb-balance-amount.bump {
     will-change: transform;
     animation: balanceBump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateZ(0);
   }
   @keyframes balanceBump {
     0% { transform: scale(1); }
@@ -288,7 +286,7 @@
   /* 比赛卡片网格 */
   .tb-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 14px;
   }
 
@@ -298,10 +296,11 @@
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
     border: 1px solid #f0f0f0;
     position: relative;
     animation: cardEnter 0.3s ease-out backwards;
+    will-change: transform;
   }
   @keyframes cardEnter {
     from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -349,24 +348,26 @@
   /* 开奖中状态 */
   .tb-card.drawing {
     animation: drawingPulse 0.8s ease-in-out infinite;
+    will-change: transform, box-shadow;
   }
   @keyframes drawingPulse {
     0%, 100% { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    50% { box-shadow: 0 0 0 4px rgba(255, 80, 0, 0.2), 0 4px 20px rgba(255, 80, 0, 0.2); }
+    50% { box-shadow: 0 0 0 3px rgba(255, 80, 0, 0.25); }
   }
 
-  /* 中奖闪烁 - 高亮醒目 */
+  /* 中奖闪烁 - 高亮醒目（性能优化版） */
   .tb-card.flash-win {
     animation: flashWin 0.3s ease-in-out 2;
     z-index: 5;
+    will-change: transform, background-color;
   }
   @keyframes flashWin {
     0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
     50% {
       background: #52c41a;
       border-color: #237804;
-      box-shadow: 0 0 50px rgba(82, 196, 26, 1), 0 0 100px rgba(82, 196, 26, 0.7), inset 0 0 30px rgba(255,255,255,0.3);
-      transform: scale(1.08);
+      box-shadow: 0 0 40px rgba(82, 196, 26, 0.8);
+      transform: scale(1.06);
     }
   }
   .tb-card.flash-win .tb-team-name,
@@ -378,20 +379,20 @@
   .tb-card.flash-win .tb-bet-total .amount,
   .tb-card.flash-win .tb-bet-potential .value {
     color: #fff !important;
-    text-shadow: 0 0 10px rgba(255,255,255,0.8);
   }
 
   .tb-card.flash-lose {
     animation: flashLose 0.3s ease-in-out 2;
     z-index: 5;
+    will-change: transform, background-color;
   }
   @keyframes flashLose {
     0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
     50% {
       background: #ff4d4f;
       border-color: #a8071a;
-      box-shadow: 0 0 50px rgba(255, 77, 79, 1), 0 0 100px rgba(255, 77, 79, 0.7), inset 0 0 30px rgba(255,255,255,0.3);
-      transform: scale(1.08);
+      box-shadow: 0 0 40px rgba(255, 77, 79, 0.8);
+      transform: scale(1.06);
     }
   }
   .tb-card.flash-lose .tb-team-name,
@@ -403,29 +404,30 @@
   .tb-card.flash-lose .tb-bet-total .amount,
   .tb-card.flash-lose .tb-bet-potential .value {
     color: #fff !important;
-    text-shadow: 0 0 10px rgba(255,255,255,0.8);
   }
 
-  /* 爆炸消失特效 */
+  /* 爆炸消失特效（性能优化版：去掉filter，只用transform和opacity） */
   .tb-card.explode-win {
     animation: explodeWin 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     z-index: 5;
+    will-change: transform, opacity;
   }
   @keyframes explodeWin {
-    0% { opacity: 1; transform: scale(1.08); filter: brightness(1.2); }
-    25% { opacity: 1; transform: scale(1.25); filter: brightness(1.8); box-shadow: 0 0 80px rgba(82, 196, 26, 1), 0 0 150px rgba(82, 196, 26, 0.8); }
-    60% { opacity: 0.6; transform: scale(1.5); filter: brightness(2.5); }
-    100% { opacity: 0; transform: scale(1.8); filter: brightness(3); box-shadow: 0 0 120px rgba(82, 196, 26, 0); }
+    0% { opacity: 1; transform: scale(1.06); }
+    25% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 60px rgba(82, 196, 26, 0.6); }
+    60% { opacity: 0.5; transform: scale(1.4); }
+    100% { opacity: 0; transform: scale(1.6); }
   }
   .tb-card.explode-lose {
     animation: explodeLose 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     z-index: 5;
+    will-change: transform, opacity;
   }
   @keyframes explodeLose {
-    0% { opacity: 1; transform: scale(1.08); filter: brightness(1.2); }
-    25% { opacity: 1; transform: scale(1.25); filter: brightness(1.8); box-shadow: 0 0 80px rgba(255, 77, 79, 1), 0 0 150px rgba(255, 77, 79, 0.8); }
-    60% { opacity: 0.6; transform: scale(1.5); filter: brightness(2.5); }
-    100% { opacity: 0; transform: scale(1.8); filter: brightness(3); box-shadow: 0 0 120px rgba(255, 77, 79, 0); }
+    0% { opacity: 1; transform: scale(1.06); }
+    25% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 60px rgba(255, 77, 79, 0.6); }
+    60% { opacity: 0.5; transform: scale(1.4); }
+    100% { opacity: 0; transform: scale(1.6); }
   }
 
   /* 粒子效果容器 */
@@ -440,6 +442,7 @@
     position: absolute;
     border-radius: 50%;
     animation: particleFly 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    will-change: transform, opacity;
   }
   @keyframes particleFly {
     0% { opacity: 1; transform: translate(0, 0) scale(1); }
@@ -1308,6 +1311,9 @@ var TEAM_NAME = [
   "露凝","霜降","雪飘","冰封","河伯","海神","山鬼","花仙","树精","石灵"
 ];
 
+// 全局已使用队名集合（确保21场比赛无重复队名）
+var usedTeamNames = {};
+
 function generateTeamName() {
   var city = pick(TEAM_CITY);
   var name = pick(TEAM_NAME);
@@ -1322,10 +1328,27 @@ function generateTeamName() {
 }
 
 function generateTwoTeams() {
-  var t1 = generateTeamName();
-  var t2 = generateTeamName();
-  while (t2 === t1) t2 = generateTeamName();
+  var t1, t2;
+  var attempts = 0;
+  do {
+    t1 = generateTeamName();
+    attempts++;
+  } while (usedTeamNames[t1] && attempts < 100);
+  usedTeamNames[t1] = true;
+
+  attempts = 0;
+  do {
+    t2 = generateTeamName();
+    attempts++;
+  } while ((usedTeamNames[t2] || t2 === t1) && attempts < 100);
+  usedTeamNames[t2] = true;
+
   return [t1, t2];
+}
+
+// 重置已使用队名（批量生成时调用）
+function resetUsedTeamNames() {
+  usedTeamNames = {};
 }
 
 // ===== 工具函数 =====
@@ -1363,8 +1386,6 @@ function generateMatch() {
     id: genId(),
     home: teams[0],
     away: teams[1],
-    homeStrength: randInt(55, 92),
-    awayStrength: randInt(55, 92),
     probabilities: probs,
     odds: odds,
     bets: [],
@@ -1375,6 +1396,7 @@ function generateMatch() {
 }
 
 function generateMatches(count) {
+  resetUsedTeamNames(); // 批量生成前重置去重集合
   var arr = [];
   for (var i = 0; i < count; i++) arr.push(generateMatch());
   return arr;
@@ -1441,7 +1463,7 @@ function getMergedBets(match) {
   return merged;
 }
 
-// ===== 粒子特效（爆炸式） =====
+// ===== 粒子特效（爆炸式，性能优化版） =====
 function createParticles(card, isWin) {
   var container = document.createElement("div");
   container.className = "particle-container";
@@ -1449,28 +1471,29 @@ function createParticles(card, isWin) {
     ? ["#52c41a", "#73d13d", "#95de64", "#b7eb8f", "#ffffff"]
     : ["#ff4d4f", "#ff7875", "#ffa39e", "#ffccc7", "#ffffff"];
   var frag = document.createDocumentFragment();
-  var count = 30;
+  var count = 20; // 从30减少到20，保持视觉效果的同时提升性能
   for (var i = 0; i < count; i++) {
     var p = document.createElement("div");
     p.className = "particle";
-    var size = rand(5, 18);
+    var size = rand(5, 16);
     var angle = rand(0, Math.PI * 2);
-    var distance = rand(80, 220);
+    var distance = rand(80, 200);
     var color = pick(colors);
+    // 用radial-gradient代替box-shadow，减少绘制开销
     p.style.cssText =
       "width:" + size + "px;height:" + size + "px;" +
-      "background:" + color + ";" +
-      "box-shadow:0 0 " + (size * 1.5) + "px " + color + ";" +
+      "background:radial-gradient(circle, " + color + " 0%, " + color + "88 60%, transparent 100%);" +
       "left:" + rand(10, 90) + "%;top:" + rand(20, 80) + "%;" +
       "--tx:" + (Math.cos(angle) * distance) + "px;" +
       "--ty:" + (Math.sin(angle) * distance - 50) + "px;" +
-      "animation-delay:" + rand(0, 0.1) + "s;" +
-      "animation-duration:" + rand(0.7, 1.1) + "s;";
+      "animation-delay:" + rand(0, 0.08) + "s;" +
+      "animation-duration:" + rand(0.6, 0.9) + "s;";
     frag.appendChild(p);
   }
   container.appendChild(frag);
   card.appendChild(container);
-  setTimeout(function() { container.remove(); }, 1500);
+  // 动画结束后移除，避免内存泄漏
+  setTimeout(function() { if (container.parentNode) container.remove(); }, 1200);
 }
 
 // ===== 比赛卡片创建（innerHTML模板，减少DOM操作） =====
@@ -1495,12 +1518,15 @@ function createMatchCard(match, index) {
 
   // 已开奖且有投注：只显示大字体结果
   if (match.settled && match.bets.length > 0) {
+    // 中了(y > x)显示总收入+y，没中(y <= x)显示净利润y-x
     var displayAmount = isWin ? match.winAmount : (match.winAmount - match.totalStake);
     var sign = displayAmount > 0 ? "+¥" : "-¥";
+    // y刚好是0的时候用-0而不是+0
+    var displayValue = displayAmount === 0 ? 0 : Math.abs(displayAmount);
     card.innerHTML =
       '<div class="tb-big-result full ' + (isWin ? "win" : "lose") + '">' +
         '<div class="big-result-text">' + (isWin ? "中" : "未中") + '</div>' +
-        '<div class="big-result-amount">' + sign + formatMoney(Math.abs(displayAmount)) + '</div>' +
+        '<div class="big-result-amount">' + sign + formatMoney(displayValue) + '</div>' +
       '</div>';
     return card;
   }
@@ -1698,9 +1724,6 @@ function sequentialDraw() {
   if (isDrawing) return;
   isDrawing = true;
 
-  // 瞬间跳到顶部
-  window.scrollTo(0, 0);
-
   // 找出有投注的比赛
   var betMatches = [];
   matches.forEach(function(m) { if (m.bets.length > 0 && !m.settled) betMatches.push(m); });
@@ -1714,17 +1737,20 @@ function sequentialDraw() {
   document.getElementById("refreshAllBtn").disabled = true;
 
   // 有投注的比赛移到前面（只排序，不改变数据）
-  var sortedIds = betMatches.map(function(m) { return m.id; });
   matches.sort(function(a, b) {
     var aBet = a.bets.length > 0 && !a.settled ? 1 : 0;
     var bBet = b.bets.length > 0 && !b.settled ? 1 : 0;
     return bBet - aBet;
   });
-  renderAllMatches();
 
-  var idx = 0;
+  // 用requestAnimationFrame确保滚动先完成一帧，再渲染，避免卡顿
+  requestAnimationFrame(function() {
+    initAudio(); // 音频初始化放到这里，不阻塞滚动
+    renderAllMatches();
 
-  function drawNext() {
+    var idx = 0;
+
+    function drawNext() {
     if (idx >= betMatches.length) {
       // 全部开奖完成（每场开奖后已自动补入新比赛，页面永远保持21场）
       updateDrawButton();
@@ -1750,14 +1776,19 @@ function sequentialDraw() {
         // 清除有投注卡片的内联animation:none，让flash动画能生效
         card.style.animation = "";
 
-        // 闪烁两下（高亮醒目）
+        // 闪烁两下（高亮醒目）+ 两下音效
         card.classList.add(win ? "flash-win" : "flash-lose");
+        playFlashSound(); // 第一闪音效
+        setTimeout(playFlashSound, 300); // 第二闪音效
 
         setTimeout(function() {
           card.classList.remove(win ? "flash-win" : "flash-lose");
 
           // 移除"已投注"斜幅，避免盖到结果卡
           card.classList.remove("has-bet");
+
+          // 播放结果音效：中了愉悦，未中消极
+          if (win) playWinSound(); else playLoseSound();
 
           // 更新卡片内容（显示大字体结果卡）
           var newCard = createMatchCard(match);
@@ -1778,6 +1809,9 @@ function sequentialDraw() {
           setTimeout(function() {
             // 从DOM中真正移除卡片
             if (card.parentNode) card.parentNode.removeChild(card);
+            // 从去重集合中移除已开奖比赛的队名
+            delete usedTeamNames[match.home];
+            delete usedTeamNames[match.away];
             // 补入新比赛：找到原位置替换，找不到则追加到末尾
             var matchIdx = matches.indexOf(match);
             var newMatch = generateMatch();
@@ -1803,6 +1837,7 @@ function sequentialDraw() {
   }
 
   drawNext();
+  }); // requestAnimationFrame结束
 }
 
 // ===== 事件绑定 =====
@@ -1863,12 +1898,25 @@ function bindEvents() {
     showToast("余额已更新为 ¥" + formatMoney(newBalance), "success");
   });
 
-  // 一键开奖（顺序开奖带动画）
-  document.getElementById("drawAllBtn").addEventListener("click", sequentialDraw);
+  // 一键开奖（顺序开奖带动画）- 先同步滚动到顶部，再延迟执行，减少首次点击延迟
+  document.getElementById("drawAllBtn").addEventListener("click", function() {
+    if (isDrawing) return;
+    window.scrollTo(0, 0); // 同步立即执行滚动
+    setTimeout(sequentialDraw, 0); // 其他操作延迟到下一个事件循环
+  });
 
   // 刷新比赛（刷新没投注过的，以及已经开奖的）
   document.getElementById("refreshAllBtn").addEventListener("click", function() {
     if (isDrawing) return;
+    // 重新构建去重集合：只保留未被刷新的比赛的队名
+    resetUsedTeamNames();
+    for (var i = 0; i < matches.length; i++) {
+      if (matches[i].bets.length > 0 && !matches[i].settled) {
+        // 保留的比赛，把队名加入去重集合
+        usedTeamNames[matches[i].home] = true;
+        usedTeamNames[matches[i].away] = true;
+      }
+    }
     for (var i = 0; i < matches.length; i++) {
       // 没有投注的，或者已经开奖的，都刷新
       if (matches[i].bets.length === 0 || matches[i].settled) {
@@ -1894,6 +1942,115 @@ var balance = 10000;
 var matches = [];
 var currentBet = null;
 
+// ===== 音效系统（Web Audio API，稳定版） =====
+var audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) { audioCtx = null; }
+  }
+  // 确保AudioContext处于运行状态
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(function() {});
+  }
+}
+
+// 统一的音符播放函数（更稳定）
+function playNote(freq, startTime, duration, type, volume) {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  try {
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, startTime);
+    // 快速attack + 指数衰减，最小值用0.005避免被截断
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume || 0.15, startTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.005, startTime + duration);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.05); // 多留50ms确保完整播放
+    // 播放结束后清理
+    osc.onended = function() {
+      try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+    };
+  } catch(e) {}
+}
+
+// 闪光音效：短促清脆的"叮"声
+function playFlashSound() {
+  initAudio();
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  var t = audioCtx.currentTime;
+  try {
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, t);
+    osc.frequency.exponentialRampToValueAtTime(1320, t + 0.08);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.18, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.005, t + 0.15);
+    osc.start(t);
+    osc.stop(t + 0.2);
+    osc.onended = function() {
+      try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+    };
+  } catch(e) {}
+}
+
+// 中奖音效：愉悦的上升琶音 C5-E5-G5-C6 + 高音
+function playWinSound() {
+  initAudio();
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  var t = audioCtx.currentTime;
+  var notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach(function(freq, i) {
+    playNote(freq, t + i * 0.1, 0.35, 'sine', 0.18);
+  });
+  // 叠加一个高音增加愉悦感
+  playNote(1568, t + 0.35, 0.55, 'triangle', 0.12);
+}
+
+// 未中音效：消极的下降低音
+function playLoseSound() {
+  initAudio();
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  var t = audioCtx.currentTime;
+  try {
+    // 主音：锯齿波下降
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.4);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.12, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.005, t + 0.5);
+    osc.start(t);
+    osc.stop(t + 0.55);
+    osc.onended = function() {
+      try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+    };
+    // 叠加低沉嗡声
+    playNote(165, t, 0.55, 'sine', 0.08);
+  } catch(e) {}
+}
+
+// 页面可见性变化时恢复音频（防止浏览器挂起AudioContext）
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(function() {});
+  }
+});
+
 // ===== 初始化 =====
 function init() {
   cacheDOM();
@@ -1903,6 +2060,10 @@ function init() {
   renderBalance();
   updateDrawButton();
   adjustHeaderHeight();
+  // 预创建AudioContext（首次交互时只需resume，减少首次点击延迟）
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch(e) { audioCtx = null; }
 }
 
 // 动态计算顶部栏高度，确保内容不被遮盖（适应不同缩放级别）
