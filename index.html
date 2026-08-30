@@ -1799,22 +1799,22 @@ function sequentialDraw() {
       var card = document.getElementById("card_" + match.id);
 
       if (card) {
+        // 提前计算结果并预调度音效（脉冲开始时就创建振荡器，500ms后闪烁时声音准时播放）
+        settleMatch(match);
+        var win = match.winAmount > match.totalStake;
+        if (win) playWinSequence(0.5); else playLoseSequence(0.5);
+
         // 开奖中脉冲
         card.classList.add("drawing");
 
         setTimeout(function() {
           card.classList.remove("drawing");
-          settleMatch(match);
-
-          // 中奖判断：y > x（得到的钱 > 投入的钱）
-          var win = match.winAmount > match.totalStake;
 
           // 清除有投注卡片的内联animation:none，让flash动画能生效
           card.style.animation = "";
 
-          // 闪烁两下（高亮醒目）+ 完整音效序列（滴滴中/滴滴不中，一次调度，间隔准确）
+          // 闪烁两下（高亮醒目），音效已提前预调度
           card.classList.add(win ? "flash-win" : "flash-lose");
-          if (win) playWinSequence(); else playLoseSequence();
 
           setTimeout(function() {
             card.classList.remove(win ? "flash-win" : "flash-lose");
@@ -1872,16 +1872,12 @@ function sequentialDraw() {
     });
   }
 
-  // 确保音频就绪后再开始开奖（避免挂后台久了音画不一）
-  if (audioCtx && audioCtx.state === 'running') {
-    startDraw();
+  // 强制resume后再开始开奖（即使state是running，resume也能确保音频硬件完全就绪）
+  wakeAudio();
+  if (audioCtx) {
+    audioCtx.resume().then(startDraw).catch(startDraw);
   } else {
-    wakeAudio();
-    if (audioCtx) {
-      audioCtx.resume().then(startDraw).catch(startDraw);
-    } else {
-      startDraw();
-    }
+    startDraw();
   }
 }
 
@@ -1991,14 +1987,15 @@ var currentBet = null;
 var audioCtx = null;
 var keepAliveStarted = false;
 
-// 启动静音保活：持续播放gain=0的振荡器，Chrome不会挂起正在播放音频的标签页
+// 启动静音保活：持续播放gain极小的振荡器，Chrome不会挂起正在播放音频的标签页
+// gain用0.00001而不是0，避免Chrome优化掉认为不需要实际处理
 function startKeepAlive() {
   if (keepAliveStarted || !audioCtx) return;
   keepAliveStarted = true;
   try {
     var osc = audioCtx.createOscillator();
     var gain = audioCtx.createGain();
-    gain.gain.value = 0;
+    gain.gain.value = 0.00001; // 极小音量，人耳听不到，但Chrome认为是真正音频播放
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start();
@@ -2046,11 +2043,12 @@ function playNote(freq, startTime, duration, type, volume) {
   } catch(e) {}
 }
 
-// 完整音效序列：滴滴中（两声叮 + 中奖琶音）
-function playWinSequence() {
+// 完整音效序列：滴滴中（两声叮 + 中奖琶音），delay为预调度延迟（秒）
+function playWinSequence(delay) {
+  delay = delay || 0;
   safePlay(function() {
     if (!audioCtx || audioCtx.state !== 'running') return;
-    var t = audioCtx.currentTime;
+    var t = audioCtx.currentTime + delay;
     playNote(880, t, 0.15, 'sine', 0.18);           // 第一声叮
     playNote(880, t + 0.3, 0.15, 'sine', 0.18);     // 第二声叮
     var winStart = t + 0.6;
@@ -2061,11 +2059,12 @@ function playWinSequence() {
   });
 }
 
-// 完整音效序列：滴滴不中（两声叮 + 未中低音）
-function playLoseSequence() {
+// 完整音效序列：滴滴不中（两声叮 + 未中低音），delay为预调度延迟（秒）
+function playLoseSequence(delay) {
+  delay = delay || 0;
   safePlay(function() {
     if (!audioCtx || audioCtx.state !== 'running') return;
-    var t = audioCtx.currentTime;
+    var t = audioCtx.currentTime + delay;
     playNote(880, t, 0.15, 'sine', 0.18);           // 第一声叮
     playNote(880, t + 0.3, 0.15, 'sine', 0.18);     // 第二声叮
     var loseStart = t + 0.6;
