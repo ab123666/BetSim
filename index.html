@@ -449,6 +449,40 @@
     100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
   }
 
+  /* ===== 手机端性能优化（max-width: 768px） ===== */
+  @media (max-width: 768px) {
+    /* 爆炸动画：去掉box-shadow，降低scale，减少GPU负担 */
+    @keyframes explodeWin {
+      0% { opacity: 1; transform: scale(1.06); }
+      25% { opacity: 1; transform: scale(1.15); }
+      60% { opacity: 0.5; transform: scale(1.3); }
+      100% { opacity: 0; transform: scale(1.45); }
+    }
+    @keyframes explodeLose {
+      0% { opacity: 1; transform: scale(1.06); }
+      25% { opacity: 1; transform: scale(1.15); }
+      60% { opacity: 0.5; transform: scale(1.3); }
+      100% { opacity: 0; transform: scale(1.45); }
+    }
+    /* 粒子动画：缩短时长，减少移动距离 */
+    .particle {
+      animation-duration: 0.7s !important;
+    }
+    /* 卡片添加contain，减少重绘范围 */
+    .tb-card {
+      contain: layout style paint;
+    }
+    /* 闪烁动画去掉box-shadow */
+    @keyframes flashWin {
+      0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
+      50% { background: #52c41a; border-color: #237804; transform: scale(1.05); }
+    }
+    @keyframes flashLose {
+      0%, 100% { background: #fff; border-color: #f0f0f0; transform: scale(1); }
+      50% { background: #ff4d4f; border-color: #a8071a; transform: scale(1.05); }
+    }
+  }
+
   /* 球队对阵 */
   .tb-teams {
     display: flex;
@@ -1471,13 +1505,15 @@ function createParticles(card, isWin) {
     ? ["#52c41a", "#73d13d", "#95de64", "#b7eb8f", "#ffffff"]
     : ["#ff4d4f", "#ff7875", "#ffa39e", "#ffccc7", "#ffffff"];
   var frag = document.createDocumentFragment();
-  var count = 20; // 从30减少到20，保持视觉效果的同时提升性能
+  // 手机端减少粒子数量，提升性能
+  var isMobile = window.innerWidth <= 768;
+  var count = isMobile ? 12 : 20;
   for (var i = 0; i < count; i++) {
     var p = document.createElement("div");
     p.className = "particle";
-    var size = rand(5, 16);
+    var size = rand(4, isMobile ? 12 : 16);
     var angle = rand(0, Math.PI * 2);
-    var distance = rand(80, 200);
+    var distance = rand(isMobile ? 50 : 80, isMobile ? 150 : 200);
     var color = pick(colors);
     // 用radial-gradient代替box-shadow，减少绘制开销
     p.style.cssText =
@@ -1487,13 +1523,13 @@ function createParticles(card, isWin) {
       "--tx:" + (Math.cos(angle) * distance) + "px;" +
       "--ty:" + (Math.sin(angle) * distance - 50) + "px;" +
       "animation-delay:" + rand(0, 0.08) + "s;" +
-      "animation-duration:" + rand(0.6, 0.9) + "s;";
+      "animation-duration:" + rand(0.5, isMobile ? 0.7 : 0.9) + "s;";
     frag.appendChild(p);
   }
   container.appendChild(frag);
   card.appendChild(container);
   // 动画结束后移除，避免内存泄漏
-  setTimeout(function() { if (container.parentNode) container.remove(); }, 1200);
+  setTimeout(function() { if (container.parentNode) container.remove(); }, isMobile ? 900 : 1200);
 }
 
 // ===== 比赛卡片创建（innerHTML模板，减少DOM操作） =====
@@ -1745,7 +1781,7 @@ function sequentialDraw() {
 
   // 用requestAnimationFrame确保滚动先完成一帧，再渲染，避免卡顿
   requestAnimationFrame(function() {
-    initAudio(); // 音频初始化放到这里，不阻塞滚动
+    resumeAudio(); // 确保音频上下文处于运行状态
     renderAllMatches();
 
     var idx = 0;
@@ -1778,6 +1814,7 @@ function sequentialDraw() {
 
         // 闪烁两下（高亮醒目）+ 两下音效
         card.classList.add(win ? "flash-win" : "flash-lose");
+        wakeAudio(); // 播放前再唤醒一次，确保音频引擎就绪
         playFlashSound(); // 第一闪音效
         setTimeout(playFlashSound, 300); // 第二闪音效
 
@@ -1898,11 +1935,13 @@ function bindEvents() {
     showToast("余额已更新为 ¥" + formatMoney(newBalance), "success");
   });
 
-  // 一键开奖（顺序开奖带动画）- 先同步滚动到顶部，再延迟执行，减少首次点击延迟
+  // 一键开奖（顺序开奖带动画）- 先唤醒音频，再滚动和开奖
   document.getElementById("drawAllBtn").addEventListener("click", function() {
     if (isDrawing) return;
+    wakeAudio(); // 点击开奖时强制唤醒音频
     window.scrollTo(0, 0); // 同步立即执行滚动
-    setTimeout(sequentialDraw, 0); // 其他操作延迟到下一个事件循环
+    // 延迟50ms开始开奖，给音频引擎恢复时间（从点击到第一声闪光还有500ms，足够）
+    setTimeout(sequentialDraw, 50);
   });
 
   // 刷新比赛（刷新没投注过的，以及已经开奖的）
@@ -1942,8 +1981,9 @@ var balance = 10000;
 var matches = [];
 var currentBet = null;
 
-// ===== 音效系统（Web Audio API，稳定版） =====
+// ===== 音效系统（Web Audio API，稳定版+后台恢复优化） =====
 var audioCtx = null;
+var audioWakeTimer = null;
 
 function initAudio() {
   if (!audioCtx) {
@@ -1954,6 +1994,33 @@ function initAudio() {
   // 确保AudioContext处于运行状态
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume().catch(function() {});
+  }
+}
+
+// 安全播放：确保AudioContext真正running后才播放（解决后台挂起后第一声不响）
+function safePlay(playFn) {
+  if (!audioCtx) {
+    initAudio();
+    return;
+  }
+  if (audioCtx.state === 'running') {
+    playFn(); // 正常状态立即播放
+  } else if (audioCtx.state === 'suspended') {
+    // 先恢复
+    audioCtx.resume().catch(function() {});
+    // 监听状态变化，确保真正变成running后才播放
+    var onStateChange = function() {
+      if (audioCtx.state === 'running') {
+        audioCtx.removeEventListener('statechange', onStateChange);
+        playFn();
+      }
+    };
+    audioCtx.addEventListener('statechange', onStateChange);
+    // 兜底：300ms后如果还没变成running，也尝试播放
+    setTimeout(function() {
+      audioCtx.removeEventListener('statechange', onStateChange);
+      if (audioCtx.state === 'running') playFn();
+    }, 300);
   }
 }
 
@@ -1982,74 +2049,118 @@ function playNote(freq, startTime, duration, type, volume) {
 
 // 闪光音效：短促清脆的"叮"声
 function playFlashSound() {
-  initAudio();
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  var t = audioCtx.currentTime;
-  try {
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, t);
-    osc.frequency.exponentialRampToValueAtTime(1320, t + 0.08);
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.18, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.005, t + 0.15);
-    osc.start(t);
-    osc.stop(t + 0.2);
-    osc.onended = function() {
-      try { osc.disconnect(); gain.disconnect(); } catch(e) {}
-    };
-  } catch(e) {}
+  safePlay(function() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    var t = audioCtx.currentTime;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, t);
+      osc.frequency.exponentialRampToValueAtTime(1320, t + 0.08);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.005, t + 0.15);
+      osc.start(t);
+      osc.stop(t + 0.2);
+      osc.onended = function() {
+        try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+      };
+    } catch(e) {}
+  });
 }
 
 // 中奖音效：愉悦的上升琶音 C5-E5-G5-C6 + 高音
 function playWinSound() {
-  initAudio();
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  var t = audioCtx.currentTime;
-  var notes = [523.25, 659.25, 783.99, 1046.50];
-  notes.forEach(function(freq, i) {
-    playNote(freq, t + i * 0.1, 0.35, 'sine', 0.18);
+  safePlay(function() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    var t = audioCtx.currentTime;
+    var notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach(function(freq, i) {
+      playNote(freq, t + i * 0.1, 0.35, 'sine', 0.18);
+    });
+    // 叠加一个高音增加愉悦感
+    playNote(1568, t + 0.35, 0.55, 'triangle', 0.12);
   });
-  // 叠加一个高音增加愉悦感
-  playNote(1568, t + 0.35, 0.55, 'triangle', 0.12);
 }
 
 // 未中音效：消极的下降低音
 function playLoseSound() {
-  initAudio();
+  safePlay(function() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    var t = audioCtx.currentTime;
+    try {
+      // 主音：锯齿波下降
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, t);
+      osc.frequency.exponentialRampToValueAtTime(110, t + 0.4);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.12, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.005, t + 0.5);
+      osc.start(t);
+      osc.stop(t + 0.55);
+      osc.onended = function() {
+        try { osc.disconnect(); gain.disconnect(); } catch(e) {}
+      };
+      // 叠加低沉嗡声
+      playNote(165, t, 0.55, 'sine', 0.08);
+    } catch(e) {}
+  });
+}
+
+// 页面可见性变化时恢复音频（防止浏览器挂起AudioContext）
+function resumeAudio() {
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(function() {});
+  }
+}
+
+// 音频唤醒：播放一个极短的静音音频，强制激活AudioContext（解决后台挂起后第一声不响）
+function wakeAudio() {
+  if (!audioCtx) {
+    initAudio();
+    return;
+  }
+  // 先恢复，恢复成功后再播放静音音频（suspended状态下直接播放会失败）
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().then(function() {
+      playSilentWake();
+    }).catch(function() {
+      playSilentWake(); // resume失败也尝试播放
+    });
+  } else {
+    playSilentWake();
+  }
+}
+
+// 播放静音音频唤醒引擎
+function playSilentWake() {
   if (!audioCtx || audioCtx.state !== 'running') return;
-  var t = audioCtx.currentTime;
   try {
-    // 主音：锯齿波下降
     var osc = audioCtx.createOscillator();
     var gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(220, t);
-    osc.frequency.exponentialRampToValueAtTime(110, t + 0.4);
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.12, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.005, t + 0.5);
-    osc.start(t);
-    osc.stop(t + 0.55);
+    gain.gain.value = 0; // 静音，听不到但能激活引擎
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.05); // 50ms后停止
     osc.onended = function() {
       try { osc.disconnect(); gain.disconnect(); } catch(e) {}
     };
-    // 叠加低沉嗡声
-    playNote(165, t, 0.55, 'sine', 0.08);
   } catch(e) {}
 }
-
-// 页面可见性变化时恢复音频（防止浏览器挂起AudioContext）
 document.addEventListener('visibilitychange', function() {
-  if (!document.hidden && audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(function() {});
-  }
+  if (!document.hidden) wakeAudio();
 });
+// 窗口获得焦点时也恢复（某些浏览器visibilitychange不触发）
+window.addEventListener('focus', wakeAudio);
+window.addEventListener('click', function() { wakeAudio(); }, { once: false });
 
 // ===== 初始化 =====
 function init() {
