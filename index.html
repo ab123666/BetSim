@@ -1779,102 +1779,110 @@ function sequentialDraw() {
     return bBet - aBet;
   });
 
-  // 用requestAnimationFrame确保滚动先完成一帧，再渲染，避免卡顿
-  requestAnimationFrame(function() {
-    resumeAudio(); // 确保音频上下文处于运行状态
-    renderAllMatches();
+  // 开奖流程（音频就绪后调用，确保音画同步）
+  function startDraw() {
+    requestAnimationFrame(function() {
+      renderAllMatches();
 
-    var idx = 0;
+      var idx = 0;
 
-    function drawNext() {
-    if (idx >= betMatches.length) {
-      // 全部开奖完成（每场开奖后已自动补入新比赛，页面永远保持21场）
-      updateDrawButton();
-      document.getElementById("refreshAllBtn").disabled = false;
-      isDrawing = false;
-      return;
-    }
+      function drawNext() {
+      if (idx >= betMatches.length) {
+        // 全部开奖完成（每场开奖后已自动补入新比赛，页面永远保持21场）
+        updateDrawButton();
+        document.getElementById("refreshAllBtn").disabled = false;
+        isDrawing = false;
+        return;
+      }
 
-    var match = betMatches[idx];
-    var card = document.getElementById("card_" + match.id);
+      var match = betMatches[idx];
+      var card = document.getElementById("card_" + match.id);
 
-    if (card) {
-      // 开奖中脉冲
-      card.classList.add("drawing");
-
-      setTimeout(function() {
-        card.classList.remove("drawing");
-        settleMatch(match);
-
-        // 中奖判断：y > x（得到的钱 > 投入的钱）
-        var win = match.winAmount > match.totalStake;
-
-        // 清除有投注卡片的内联animation:none，让flash动画能生效
-        card.style.animation = "";
-
-        // 闪烁两下（高亮醒目）+ 两下音效
-        card.classList.add(win ? "flash-win" : "flash-lose");
-        wakeAudio(); // 播放前再唤醒一次，确保音频引擎就绪
-        playFlashSound(); // 第一闪音效
-        setTimeout(playFlashSound, 300); // 第二闪音效
+      if (card) {
+        // 开奖中脉冲
+        card.classList.add("drawing");
 
         setTimeout(function() {
-          card.classList.remove(win ? "flash-win" : "flash-lose");
+          card.classList.remove("drawing");
+          settleMatch(match);
 
-          // 移除"已投注"斜幅，避免盖到结果卡
-          card.classList.remove("has-bet");
+          // 中奖判断：y > x（得到的钱 > 投入的钱）
+          var win = match.winAmount > match.totalStake;
 
-          // 播放结果音效：中了愉悦，未中消极
-          if (win) playWinSound(); else playLoseSound();
+          // 清除有投注卡片的内联animation:none，让flash动画能生效
+          card.style.animation = "";
 
-          // 更新卡片内容（显示大字体结果卡）
-          var newCard = createMatchCard(match);
-          newCard.className = card.className;
-          newCard.style.animation = "none";
-          card.parentNode.replaceChild(newCard, card);
-          card = newCard;
+          // 闪烁两下（高亮醒目）+ 完整音效序列（滴滴中/滴滴不中，一次调度，间隔准确）
+          card.classList.add(win ? "flash-win" : "flash-lose");
+          if (win) playWinSequence(); else playLoseSequence();
 
-          // 粒子特效（爆炸式）
-          createParticles(card, win);
-
-          // 爆炸消失特效
           setTimeout(function() {
-            card.classList.add(win ? "explode-win" : "explode-lose");
-          }, 100);
+            card.classList.remove(win ? "flash-win" : "flash-lose");
 
-          // 爆炸完成后移除卡片，同时补入新比赛，保持永远21场
-          setTimeout(function() {
-            // 从DOM中真正移除卡片
-            if (card.parentNode) card.parentNode.removeChild(card);
-            // 从去重集合中移除已开奖比赛的队名
-            delete usedTeamNames[match.home];
-            delete usedTeamNames[match.away];
-            // 补入新比赛：找到原位置替换，找不到则追加到末尾
-            var matchIdx = matches.indexOf(match);
-            var newMatch = generateMatch();
-            if (matchIdx !== -1) {
-              matches[matchIdx] = newMatch;
-            } else {
-              matches.push(newMatch);
-            }
-            // 在DOM末尾添加新比赛卡片
-            var newCard = createMatchCard(newMatch);
-            DOM.grid.appendChild(newCard);
-            // 更新余额（中了有弹跳动画，没中只更新数字）
-            renderBalance(win);
-            idx++;
-            drawNext();
-          }, 950);
-        }, 650);
-      }, 500);
-    } else {
-      idx++;
-      drawNext();
+            // 移除"已投注"斜幅，避免盖到结果卡
+            card.classList.remove("has-bet");
+
+            // 更新卡片内容（显示大字体结果卡）
+            var newCard = createMatchCard(match);
+            newCard.className = card.className;
+            newCard.style.animation = "none";
+            card.parentNode.replaceChild(newCard, card);
+            card = newCard;
+
+            // 粒子特效（爆炸式）
+            createParticles(card, win);
+
+            // 爆炸消失特效
+            setTimeout(function() {
+              card.classList.add(win ? "explode-win" : "explode-lose");
+            }, 100);
+
+            // 爆炸完成后移除卡片，同时补入新比赛，保持永远21场
+            setTimeout(function() {
+              // 从DOM中真正移除卡片
+              if (card.parentNode) card.parentNode.removeChild(card);
+              // 从去重集合中移除已开奖比赛的队名
+              delete usedTeamNames[match.home];
+              delete usedTeamNames[match.away];
+              // 补入新比赛：找到原位置替换，找不到则追加到末尾
+              var matchIdx = matches.indexOf(match);
+              var newMatch = generateMatch();
+              if (matchIdx !== -1) {
+                matches[matchIdx] = newMatch;
+              } else {
+                matches.push(newMatch);
+              }
+              // 在DOM末尾添加新比赛卡片
+              var newCard = createMatchCard(newMatch);
+              DOM.grid.appendChild(newCard);
+              // 更新余额（中了有弹跳动画，没中只更新数字）
+              renderBalance(win);
+              idx++;
+              drawNext();
+            }, 950);
+          }, 650);
+        }, 500);
+      } else {
+        idx++;
+        drawNext();
+      }
     }
+
+    drawNext();
+    });
   }
 
-  drawNext();
-  }); // requestAnimationFrame结束
+  // 确保音频就绪后再开始开奖（避免挂后台久了音画不一）
+  if (audioCtx && audioCtx.state === 'running') {
+    startDraw();
+  } else {
+    wakeAudio();
+    if (audioCtx) {
+      audioCtx.resume().then(startDraw).catch(startDraw);
+    } else {
+      startDraw();
+    }
+  }
 }
 
 // ===== 事件绑定 =====
@@ -1935,13 +1943,11 @@ function bindEvents() {
     showToast("余额已更新为 ¥" + formatMoney(newBalance), "success");
   });
 
-  // 一键开奖（顺序开奖带动画）- 先唤醒音频，再滚动和开奖
+  // 一键开奖（顺序开奖带动画）
   document.getElementById("drawAllBtn").addEventListener("click", function() {
     if (isDrawing) return;
-    wakeAudio(); // 点击开奖时强制唤醒音频
     window.scrollTo(0, 0); // 同步立即执行滚动
-    // 延迟50ms开始开奖，给音频引擎恢复时间（从点击到第一声闪光还有500ms，足够）
-    setTimeout(sequentialDraw, 50);
+    setTimeout(sequentialDraw, 0);
   });
 
   // 刷新比赛（刷新没投注过的，以及已经开奖的）
@@ -1981,50 +1987,45 @@ var balance = 10000;
 var matches = [];
 var currentBet = null;
 
-// ===== 音效系统（Web Audio API，稳定版+后台恢复优化） =====
+// ===== 音效系统（Web Audio API + 静音保活，业界标准方案） =====
 var audioCtx = null;
-var audioWakeTimer = null;
+var keepAliveStarted = false;
 
-function initAudio() {
-  if (!audioCtx) {
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    } catch(e) { audioCtx = null; }
-  }
-  // 确保AudioContext处于运行状态
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(function() {});
+// 启动静音保活：持续播放gain=0的振荡器，Chrome不会挂起正在播放音频的标签页
+function startKeepAlive() {
+  if (keepAliveStarted || !audioCtx) return;
+  keepAliveStarted = true;
+  try {
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    gain.gain.value = 0;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+  } catch(e) {}
+}
+
+// 唤醒音频：resume + 启动保活（首次用户交互时调用一次即可）
+function wakeAudio() {
+  if (!audioCtx) return;
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().then(startKeepAlive).catch(startKeepAlive);
+  } else {
+    startKeepAlive();
   }
 }
 
-// 安全播放：确保AudioContext真正running后才播放（解决后台挂起后第一声不响）
+// 安全播放：确保AudioContext恢复后再播放
 function safePlay(playFn) {
-  if (!audioCtx) {
-    initAudio();
-    return;
-  }
+  if (!audioCtx) return;
   if (audioCtx.state === 'running') {
-    playFn(); // 正常状态立即播放
-  } else if (audioCtx.state === 'suspended') {
-    // 先恢复
-    audioCtx.resume().catch(function() {});
-    // 监听状态变化，确保真正变成running后才播放
-    var onStateChange = function() {
-      if (audioCtx.state === 'running') {
-        audioCtx.removeEventListener('statechange', onStateChange);
-        playFn();
-      }
-    };
-    audioCtx.addEventListener('statechange', onStateChange);
-    // 兜底：300ms后如果还没变成running，也尝试播放
-    setTimeout(function() {
-      audioCtx.removeEventListener('statechange', onStateChange);
-      if (audioCtx.state === 'running') playFn();
-    }, 300);
+    playFn();
+  } else {
+    audioCtx.resume().then(playFn).catch(function() { setTimeout(playFn, 10); });
   }
 }
 
-// 统一的音符播放函数（更稳定）
+// 统一的音符播放函数
 function playNote(freq, startTime, duration, type, volume) {
   if (!audioCtx || audioCtx.state !== 'running') return;
   try {
@@ -2034,139 +2035,79 @@ function playNote(freq, startTime, duration, type, volume) {
     gain.connect(audioCtx.destination);
     osc.type = type || 'sine';
     osc.frequency.setValueAtTime(freq, startTime);
-    // 快速attack + 指数衰减，最小值用0.005避免被截断
     gain.gain.setValueAtTime(0, startTime);
     gain.gain.linearRampToValueAtTime(volume || 0.15, startTime + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.005, startTime + duration);
     osc.start(startTime);
-    osc.stop(startTime + duration + 0.05); // 多留50ms确保完整播放
-    // 播放结束后清理
+    osc.stop(startTime + duration + 0.05);
     osc.onended = function() {
       try { osc.disconnect(); gain.disconnect(); } catch(e) {}
     };
   } catch(e) {}
 }
 
-// 闪光音效：短促清脆的"叮"声
-function playFlashSound() {
+// 完整音效序列：滴滴中（两声叮 + 中奖琶音）
+function playWinSequence() {
   safePlay(function() {
     if (!audioCtx || audioCtx.state !== 'running') return;
     var t = audioCtx.currentTime;
-    try {
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, t);
-      osc.frequency.exponentialRampToValueAtTime(1320, t + 0.08);
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.18, t + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.005, t + 0.15);
-      osc.start(t);
-      osc.stop(t + 0.2);
-      osc.onended = function() {
-        try { osc.disconnect(); gain.disconnect(); } catch(e) {}
-      };
-    } catch(e) {}
-  });
-}
-
-// 中奖音效：愉悦的上升琶音 C5-E5-G5-C6 + 高音
-function playWinSound() {
-  safePlay(function() {
-    if (!audioCtx || audioCtx.state !== 'running') return;
-    var t = audioCtx.currentTime;
-    var notes = [523.25, 659.25, 783.99, 1046.50];
-    notes.forEach(function(freq, i) {
-      playNote(freq, t + i * 0.1, 0.35, 'sine', 0.18);
+    playNote(880, t, 0.15, 'sine', 0.18);           // 第一声叮
+    playNote(880, t + 0.3, 0.15, 'sine', 0.18);     // 第二声叮
+    var winStart = t + 0.6;
+    [523.25, 659.25, 783.99, 1046.50].forEach(function(freq, i) {
+      playNote(freq, winStart + i * 0.1, 0.35, 'sine', 0.18);
     });
-    // 叠加一个高音增加愉悦感
-    playNote(1568, t + 0.35, 0.55, 'triangle', 0.12);
+    playNote(1568, winStart + 0.35, 0.55, 'triangle', 0.12);
   });
 }
 
-// 未中音效：消极的下降低音
-function playLoseSound() {
+// 完整音效序列：滴滴不中（两声叮 + 未中低音）
+function playLoseSequence() {
   safePlay(function() {
     if (!audioCtx || audioCtx.state !== 'running') return;
     var t = audioCtx.currentTime;
+    playNote(880, t, 0.15, 'sine', 0.18);           // 第一声叮
+    playNote(880, t + 0.3, 0.15, 'sine', 0.18);     // 第二声叮
+    var loseStart = t + 0.6;
     try {
-      // 主音：锯齿波下降
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, t);
-      osc.frequency.exponentialRampToValueAtTime(110, t + 0.4);
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.12, t + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.005, t + 0.5);
-      osc.start(t);
-      osc.stop(t + 0.55);
+      osc.frequency.setValueAtTime(220, loseStart);
+      osc.frequency.exponentialRampToValueAtTime(110, loseStart + 0.4);
+      gain.gain.setValueAtTime(0, loseStart);
+      gain.gain.linearRampToValueAtTime(0.12, loseStart + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.005, loseStart + 0.5);
+      osc.start(loseStart);
+      osc.stop(loseStart + 0.55);
       osc.onended = function() {
         try { osc.disconnect(); gain.disconnect(); } catch(e) {}
       };
-      // 叠加低沉嗡声
-      playNote(165, t, 0.55, 'sine', 0.08);
+      playNote(165, loseStart, 0.55, 'sine', 0.08);
     } catch(e) {}
   });
 }
 
-// 页面可见性变化时恢复音频（防止浏览器挂起AudioContext）
-function resumeAudio() {
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(function() {});
-  }
+// 绑定音频激活事件（首次任意交互启动保活，之后永久有效）
+function bindAudioEvents() {
+  var events = ['click', 'touchstart', 'mouseover', 'scroll', 'touchmove'];
+  events.forEach(function(evt) {
+    var target = (evt === 'scroll') ? window : document;
+    target.addEventListener(evt, wakeAudio, {passive: true});
+  });
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) wakeAudio();
+  });
 }
-
-// 音频唤醒：播放一个极短的静音音频，强制激活AudioContext（解决后台挂起后第一声不响）
-function wakeAudio() {
-  if (!audioCtx) {
-    initAudio();
-    return;
-  }
-  // 先恢复，恢复成功后再播放静音音频（suspended状态下直接播放会失败）
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().then(function() {
-      playSilentWake();
-    }).catch(function() {
-      playSilentWake(); // resume失败也尝试播放
-    });
-  } else {
-    playSilentWake();
-  }
-}
-
-// 播放静音音频唤醒引擎
-function playSilentWake() {
-  if (!audioCtx || audioCtx.state !== 'running') return;
-  try {
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    gain.gain.value = 0; // 静音，听不到但能激活引擎
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.05); // 50ms后停止
-    osc.onended = function() {
-      try { osc.disconnect(); gain.disconnect(); } catch(e) {}
-    };
-  } catch(e) {}
-}
-document.addEventListener('visibilitychange', function() {
-  if (!document.hidden) wakeAudio();
-});
-// 窗口获得焦点时也恢复（某些浏览器visibilitychange不触发）
-window.addEventListener('focus', wakeAudio);
-window.addEventListener('click', function() { wakeAudio(); }, { once: false });
 
 // ===== 初始化 =====
 function init() {
   cacheDOM();
   matches = generateMatches(CONFIG.MATCH_COUNT);
   bindEvents();
+  bindAudioEvents();
   renderAllMatches();
   renderBalance();
   updateDrawButton();
