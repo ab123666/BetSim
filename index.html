@@ -20,32 +20,44 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    overscroll-behavior: none;
-    touch-action: manipulation;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
   body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    -webkit-tap-highlight-color: transparent;
   }
   button {
-    touch-action: manipulation;
     -webkit-appearance: none;
     appearance: none;
     border: none;
     cursor: pointer;
     font-family: inherit;
     min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  input {
+    -webkit-appearance: none;
+    appearance: none;
+    font-family: inherit;
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   /* ===== 顶部导航栏 ===== */
   .tb-header {
     background: linear-gradient(135deg, #ff5000 0%, #ff6a00 50%, #ff8c00 100%);
     padding-top: env(safe-area-inset-top);
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 100;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     box-shadow: 0 4px 20px rgba(255, 80, 0, 0.25);
   }
   .tb-header::before {
@@ -220,14 +232,14 @@
   .tb-main {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 18px 16px 40px;
+    padding: calc(85px + env(safe-area-inset-top)) 16px 40px;
   }
 
   /* 分类标签栏 */
   .tb-category-bar {
     background: #fff;
     border-radius: 12px;
-    padding: 14px 18px;
+    padding: 12px 14px;
     margin-bottom: 18px;
     display: flex;
     align-items: center;
@@ -235,6 +247,7 @@
     box-shadow: 0 2px 12px rgba(0,0,0,0.05);
     position: relative;
     overflow: hidden;
+    gap: 10px;
   }
   .tb-category-bar::before {
     content: "";
@@ -244,31 +257,39 @@
     background: linear-gradient(180deg, #ff5000, #ff8c00);
   }
   .tb-category-title {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 800;
     color: #333;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .tb-category-count {
-    font-size: 13px;
+    font-size: 12px;
     color: #999;
     font-weight: 400;
     background: #f5f5f5;
-    padding: 3px 10px;
+    padding: 2px 8px;
     border-radius: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .tb-category-hint {
-    font-size: 12px;
+    font-size: 11px;
     color: #bbb;
+    white-space: nowrap;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* 比赛卡片网格 */
   .tb-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
   }
 
   /* 比赛卡片 */
@@ -661,14 +682,6 @@
     position: relative;
     z-index: 1;
   }
-  .big-result-match {
-    font-size: 13px;
-    color: rgba(255,255,255,0.8);
-    margin-top: 12px;
-    font-weight: 500;
-    position: relative;
-    z-index: 1;
-  }
 
   /* ===== 弹窗 ===== */
   .tb-modal-overlay {
@@ -961,9 +974,6 @@
     .big-result-amount {
       font-size: 24px;
     }
-    .big-result-match {
-      font-size: 12px;
-    }
     /* 弹窗适配 */
     .tb-modal-content {
       width: 92%;
@@ -1042,6 +1052,59 @@
     .tb-modal-content {
       width: 95%;
       padding: 16px 14px;
+    }
+  }
+
+  /* 超小屏手机（≤360px，老旧安卓机） */
+  @media (max-width: 360px) {
+    .tb-header-top {
+      padding: 6px 8px;
+      gap: 6px;
+    }
+    .tb-logo-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+    }
+    .tb-logo-text {
+      font-size: 13px;
+    }
+    .tb-balance-amount {
+      font-size: 14px;
+    }
+    .tb-btn-primary, .tb-btn-outline {
+      padding: 6px 10px;
+      font-size: 12px;
+      min-height: 36px;
+    }
+    .tb-main {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    .tb-category-bar {
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .tb-category-title {
+      font-size: 14px;
+    }
+    .tb-category-hint {
+      font-size: 10px;
+    }
+    .tb-card {
+      padding: 10px;
+    }
+    .tb-team-name {
+      font-size: 12px;
+    }
+    .odds-value {
+      font-size: 14px;
+    }
+    .big-result-text {
+      font-size: 32px;
+    }
+    .big-result-amount {
+      font-size: 18px;
     }
   }
 
@@ -1438,7 +1501,6 @@ function createMatchCard(match, index) {
       '<div class="tb-big-result full ' + (isWin ? "win" : "lose") + '">' +
         '<div class="big-result-text">' + (isWin ? "中" : "未中") + '</div>' +
         '<div class="big-result-amount">' + sign + formatMoney(Math.abs(displayAmount)) + '</div>' +
-        '<div class="big-result-match">' + match.home + ' vs ' + match.away + '</div>' +
       '</div>';
     return card;
   }
@@ -1664,21 +1726,10 @@ function sequentialDraw() {
 
   function drawNext() {
     if (idx >= betMatches.length) {
-      // 全部开奖完成（每场已单独更新余额，这里不再重复调用）
+      // 全部开奖完成（每场开奖后已自动补入新比赛，页面永远保持21场）
       updateDrawButton();
       document.getElementById("refreshAllBtn").disabled = false;
-
-      // 延迟后替换已开奖比赛
-      setTimeout(function() {
-        for (var i = 0; i < matches.length; i++) {
-          if (matches[i].settled) {
-            matches[i] = generateMatch();
-          }
-        }
-        renderAllMatches();
-        updateDrawButton();
-        isDrawing = false;
-      }, 1000);
+      isDrawing = false;
       return;
     }
 
@@ -1723,12 +1774,26 @@ function sequentialDraw() {
             card.classList.add(win ? "explode-win" : "explode-lose");
           }, 100);
 
-          // 爆炸完成后更新余额（中了有弹跳动画，没中只更新数字），然后下一场
+          // 爆炸完成后移除卡片，同时补入新比赛，保持永远21场
           setTimeout(function() {
+            // 从DOM中真正移除卡片
+            if (card.parentNode) card.parentNode.removeChild(card);
+            // 补入新比赛：找到原位置替换，找不到则追加到末尾
+            var matchIdx = matches.indexOf(match);
+            var newMatch = generateMatch();
+            if (matchIdx !== -1) {
+              matches[matchIdx] = newMatch;
+            } else {
+              matches.push(newMatch);
+            }
+            // 在DOM末尾添加新比赛卡片
+            var newCard = createMatchCard(newMatch);
+            DOM.grid.appendChild(newCard);
+            // 更新余额（中了有弹跳动画，没中只更新数字）
             renderBalance(win);
             idx++;
             drawNext();
-          }, 650);
+          }, 950);
         }, 650);
       }, 500);
     } else {
@@ -1801,11 +1866,12 @@ function bindEvents() {
   // 一键开奖（顺序开奖带动画）
   document.getElementById("drawAllBtn").addEventListener("click", sequentialDraw);
 
-  // 刷新比赛（只刷新没投注过的）
+  // 刷新比赛（刷新没投注过的，以及已经开奖的）
   document.getElementById("refreshAllBtn").addEventListener("click", function() {
     if (isDrawing) return;
     for (var i = 0; i < matches.length; i++) {
-      if (matches[i].bets.length === 0) {
+      // 没有投注的，或者已经开奖的，都刷新
+      if (matches[i].bets.length === 0 || matches[i].settled) {
         matches[i] = generateMatch();
       }
     }
@@ -1836,7 +1902,24 @@ function init() {
   renderAllMatches();
   renderBalance();
   updateDrawButton();
+  adjustHeaderHeight();
 }
+
+// 动态计算顶部栏高度，确保内容不被遮盖（适应不同缩放级别）
+function adjustHeaderHeight() {
+  var header = document.querySelector('.tb-header');
+  var main = document.querySelector('.tb-main');
+  if (header && main) {
+    var headerHeight = header.offsetHeight;
+    main.style.paddingTop = (headerHeight + 12) + 'px';
+  }
+}
+
+// 窗口大小变化时重新计算
+window.addEventListener('resize', adjustHeaderHeight);
+window.addEventListener('orientationchange', function() {
+  setTimeout(adjustHeaderHeight, 100);
+});
 
 init();
 </script>
